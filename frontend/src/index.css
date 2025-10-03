@@ -1,0 +1,210 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Luxurious Black & Gold Design System */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 0%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+
+    /* Gold primary colors */
+    --primary: 45 100% 51%;
+    --primary-foreground: 0 0% 0%;
+    --primary-glow: 45 100% 65%;
+
+    /* Black secondary */
+    --secondary: 0 0% 9%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    /* Gold accent */
+    --accent: 45 100% 51%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 45 100% 51%;
+
+    --radius: 0.75rem;
+
+    /* Custom design tokens */
+    --luxury-black: 0 0% 6%;
+    --elegant-gold: 45 100% 51%;
+    --gold-shimmer: 45 100% 65%;
+    --soft-gold: 45 50% 85%;
+    
+    /* Gradients */
+    --gradient-gold: linear-gradient(135deg, hsl(var(--elegant-gold)), hsl(var(--gold-shimmer)));
+    --gradient-black: linear-gradient(135deg, hsl(var(--luxury-black)), hsl(0 0% 12%));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--luxury-black)), hsl(0 0% 20%));
+    
+    /* Shadows */
+    --shadow-gold: 0 10px 30px -5px hsl(var(--elegant-gold) / 0.3);
+    --shadow-elegant: 0 20px 60px -10px hsl(0 0% 0% / 0.2);
+    --shadow-card: 0 4px 20px -2px hsl(0 0% 0% / 0.1);
+    
+    /* Animation easing */
+    --ease-luxury: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    /* Dark mode with inverted luxury theme */
+    --background: 0 0% 6%;
+    --foreground: 45 100% 90%;
+
+    --card: 0 0% 9%;
+    --card-foreground: 45 100% 90%;
+
+    --popover: 0 0% 9%;
+    --popover-foreground: 45 100% 90%;
+
+    --primary: 45 100% 60%;
+    --primary-foreground: 0 0% 0%;
+    --primary-glow: 45 100% 75%;
+
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 45 100% 90%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 45 100% 60%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 0%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 45 100% 60%;
+
+    /* Dark mode custom tokens */
+    --luxury-black: 0 0% 6%;
+    --elegant-gold: 45 100% 60%;
+    --gold-shimmer: 45 100% 75%;
+    --soft-gold: 45 30% 25%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-light;
+  }
+
+  /* Custom utility classes */
+  .gradient-gold {
+    background: var(--gradient-gold);
+  }
+
+  .gradient-black {
+    background: var(--gradient-black);
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .shadow-gold {
+    box-shadow: var(--shadow-gold);
+  }
+
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .text-gradient-gold {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s var(--ease-luxury);
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.4s var(--ease-luxury);
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.6s var(--ease-luxury);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Smooth hover transitions */
+.hover-lift {
+  transition: transform 0.3s var(--ease-luxury), box-shadow 0.3s var(--ease-luxury);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-elegant);
+}
+
+.hover-gold {
+  transition: all 0.3s var(--ease-luxury);
+}
+
+.hover-gold:hover {
+  color: hsl(var(--elegant-gold));
+  text-shadow: 0 0 20px hsl(var(--elegant-gold) / 0.5);
+}
