@@ -7,6 +7,7 @@ import React from "react";
 import { useCart } from "@/context/CartContext";
 import { fetchProducts } from "@/services/db";
 import { Product } from "@/types/db";
+import { toast } from "sonner";
 
 type Filters = {
   search: string;
@@ -186,15 +187,21 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
                 <Button
                   className="w-full sm:w-auto sm:min-w-[140px] bg-secondary text-secondary-foreground hover:bg-secondary/90 font-elegant font-bold group"
                   disabled={product.stock <= 0}
-                  onClick={() =>
+                  onClick={() => {
                     addToCart({
                       id: product.id,
                       name: product.name,
                       image: product.image_url || "/placeholder.png",
                       price: product.price,
                       quantity: 1,
-                    })
-                  }
+                    });
+
+                    // ✅ Show toast
+                    toast.success(`${product.name} added to cart 🛒`, {
+                      description: "Go to your cart to checkout.",
+                      duration: 2500, // optional: auto close after 2.5s
+                    });
+                  }}
                 >
                   <ShoppingCart className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
                   {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
