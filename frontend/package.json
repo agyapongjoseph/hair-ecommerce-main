@@ -10,7 +10,8 @@
     "ngrok": "ngrok http 8080",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "supabase": "supabase functions new initiate-payment"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
