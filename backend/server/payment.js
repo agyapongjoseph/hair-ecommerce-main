@@ -23,7 +23,7 @@ router.post("/initiate", async (req, res) => {
         customerEmail,
         customerMsisdn: customerPhone,
         channel: "momo", // mobile money default; can also use "card"
-        primaryCallbackUrl: "http://localhost:5173/checkout-success", // replace in production
+        primaryCallbackUrl: "https://hair-ecommerce-main.vercel.app/checkout-success",
       },
       {
         headers: {
