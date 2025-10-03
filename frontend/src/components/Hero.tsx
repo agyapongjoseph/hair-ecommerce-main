@@ -1,8 +1,11 @@
-import { Button } from '@/components/ui/button';
-import { Star, ArrowRight } from 'lucide-react';
-import heroVideo from '@/assets/hero-bg.mp4'; // make sure your video is inside assets
+import { Button } from "@/components/ui/button";
+import { Star, ArrowRight } from "lucide-react";
+import heroVideo from "@/assets/hero-bg.mp4";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section
       id="home"
@@ -51,7 +54,7 @@ const Hero = () => {
 
           {/* Features */}
           <div className="flex flex-wrap justify-center gap-4 mb-10">
-            {['Virgin Hair', 'No Shedding', 'Long Lasting'].map((feature, index) => (
+            {["Virgin Hair", "No Shedding", "Long Lasting"].map((feature, index) => (
               <div
                 key={feature}
                 className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-2 text-white font-elegant animate-scale-in"
@@ -64,17 +67,25 @@ const Hero = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            {/* Shop Now → Checkout */}
             <Button
               size="lg"
               className="bg-primary hover:bg-primary-glow text-black font-elegant font-bold px-8 py-6 text-lg shadow-gold hover-lift group"
+              onClick={() => navigate("/checkout")}
             >
               Shop Now
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
+
+            {/* View Catalog → Scroll to Products */}
             <Button
               variant="outline"
               size="lg"
               className="border-white text-white hover:bg-white hover:text-black font-elegant font-bold px-8 py-6 text-lg hover-lift"
+              onClick={() => {
+                const el = document.getElementById("products");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
             >
               View Catalog
             </Button>
@@ -83,12 +94,12 @@ const Hero = () => {
           {/* Stats */}
           <div
             className="flex flex-wrap justify-center gap-8 mt-16 animate-fade-in-up"
-            style={{ animationDelay: '0.3s' }}
+            style={{ animationDelay: "0.3s" }}
           >
             {[
-              { label: 'Happy Customers', value: '10K+' },
-              { label: 'Premium Products', value: '50+' },
-              { label: 'Quality', value: '100%' },
+              { label: "Happy Customers", value: "10K+" },
+              { label: "Premium Products", value: "50+" },
+              { label: "Quality", value: "100%" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-2xl md:text-3xl font-luxury font-bold text-primary mb-1">

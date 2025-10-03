@@ -28,6 +28,9 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Track selected length per product
+  const [selectedLengths, setSelectedLengths] = useState<Record<string, string>>({});
+
   useEffect(() => {
     async function load() {
       try {
@@ -56,7 +59,6 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
     );
   };
 
-  // ✅ FIX: use lengths, colors, textures (not length, color, texture)
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
       !filters.search ||
@@ -138,7 +140,7 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
                   </div>
                 )}
 
-                {/* Discount Badge - Top Left like Jumia */}
+                {/* Discount Badge */}
                 {product.previous_price && product.previous_price > product.price && (
                   <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
                     <div className="bg-red-600 text-white text-xs sm:text-sm font-bold px-2 py-1 rounded-tr-lg rounded-bl-lg shadow-md">
@@ -169,13 +171,34 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
                 <h3 className="font-elegant font-bold text-base sm:text-lg mb-1 sm:mb-2 text-card-foreground">
                   {product.name}
                 </h3>
+                    <h3 className="text-sm font-semibold text-gray-800 mb-3">Select Length:</h3>
+                {/* Length Selector - Pills */}
+                {product.lengths && product.lengths.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {product.lengths.map((len) => {
+                      const isSelected = selectedLengths[product.id] === len;
+                      return (
+                        <button
+                          key={len}
+                          onClick={() =>
+                            setSelectedLengths((prev) => ({
+                              ...prev,
+                              [product.id]: len,
+                            }))
+                          }
+                          className={`px-2 py-0.5 rounded-full text-xs font-elegant border transition-all ${
+                            isSelected
+                              ? "bg-gradient-to-r from-yellow-500 to-yellow-400 text-black font-bold shadow-sm"
+                              : "bg-white text-gray-600 border-gray-300 hover:bg-yellow-100"
+                          }`}
+                        >
+                          {len}"
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
 
-                {/* Lengths line */}
-                <div className="text-sm text-muted-foreground mb-2">
-                  {product.lengths && product.lengths.length > 0 ? product.lengths.join(", ") : "One size"}
-                </div>
-
-                
                 {/* Price Section */}
                 <div className="flex items-center gap-2 mb-3 sm:mb-4">
                   <span className="text-xl sm:text-2xl font-bold text-primary">
@@ -188,18 +211,23 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
                   className="w-full sm:w-auto sm:min-w-[140px] bg-secondary text-secondary-foreground hover:bg-secondary/90 font-elegant font-bold group"
                   disabled={product.stock <= 0}
                   onClick={() => {
+                    if (product.lengths && product.lengths.length > 0 && !selectedLengths[product.id]) {
+                      toast.error("Please select a length before adding to cart.");
+                      return;
+                    }
+
                     addToCart({
                       id: product.id,
                       name: product.name,
                       image: product.image_url || "/placeholder.png",
                       price: product.price,
                       quantity: 1,
+                      length: selectedLengths[product.id] || "Default",
                     });
 
-                    // ✅ Show toast
-                    toast.success(`${product.name} added to cart 🛒`, {
+                    toast.success(`${product.name} (${selectedLengths[product.id] || "Default"}) added to cart 🛒`, {
                       description: "Go to your cart to checkout.",
-                      duration: 2500, // optional: auto close after 2.5s
+                      duration: 2500,
                     });
                   }}
                 >
