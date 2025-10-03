@@ -15,8 +15,8 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 
 // --- Express app setup ---
 const app = express();
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
-app.use(cors({ origin: FRONTEND_URL }));
+const FRONTEND_URL = process.env.FRONTEND_URL || ["http://localhost:5173", "http://localhost:8081"];
+app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 app.use(express.json({ limit: "10mb" }));
 
 // --- Supabase setup ---
