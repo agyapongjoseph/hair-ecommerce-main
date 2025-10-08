@@ -231,20 +231,20 @@ app.post("/checkout", async (req, res) => {
       checkoutId: hubtelData.data.checkoutId,
     });
       } catch (err) {
-    if (err.response) {
-      try {
-        const text = await err.response.text();
-        console.error("Checkout error details (Hubtel response):", text);
-      } catch (parseErr) {
-        console.error("Checkout error details (could not read Hubtel response):", parseErr.message);
-      }
-    } else {
-      console.error("Checkout error details (General):", err.message);
-    }
-
-    return res.status(400).json({ error: err.message });
+  if (err.response) {
+    console.error("Hubtel response data:", err.response.data);
+    console.error("Hubtel response status:", err.response.status);
+    console.error("Hubtel response headers:", err.response.headers);
+  } else if (err.request) {
+    console.error("No response received from Hubtel:", err.request);
+  } else {
+    console.error("Error setting up Hubtel request:", err.message);
   }
+
+  return res.status(400).json({ error: err.message });
+}
 });
+
 
 
 
