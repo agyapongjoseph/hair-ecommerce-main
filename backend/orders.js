@@ -1,6 +1,6 @@
-// backend/routes/orders.js
+// backend/orders.js
 import express from "express";
-import { supabase } from "../frontend/src/lib/supabaseClient.js";
+import { supabase } from "./supabaseClient.js";
 
 const router = express.Router();
 
