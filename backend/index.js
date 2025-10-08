@@ -6,6 +6,7 @@ import fetch from "node-fetch";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
+import ordersRouter from "./routes/orders.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,6 +19,7 @@ const app = express();
 const FRONTEND_URL = process.env.FRONTEND_URL || ["http://localhost:5173", "http://localhost:8081"];
 app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 app.use(express.json({ limit: "10mb" }));
+app.use("/orders", ordersRouter);
 
 // --- Supabase setup ---
 const SUPABASE_URL = process.env.SUPABASE_URL;
