@@ -1,18 +1,22 @@
 // src/pages/Checkout.tsx
 import React, { useState } from "react";
 import { useCart } from "@/context/CartContext";
+import { useOrders } from "@/context/OrdersContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/context/AuthContext";
 
 const Checkout: React.FC = () => {
   const { cart, clearCart } = useCart();
+  const { createOrder } = useOrders();
+  const { user } = useAuth();
+
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     address: "",
-    paymentMethod: "momo", // default: Mobile Money
   });
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -24,33 +28,54 @@ const Checkout: React.FC = () => {
     try {
       setLoading(true);
 
-      // ✅ Send order details to your backend
-      const res = await fetch(`${import.meta.env.VITE_ADMIN_API_BASE}/checkout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer: formData,
-          items: cart,
-          total,
-        }),
+      // ✅ 1. Create an order in backend (and Supabase if applicable)
+      const order = await createOrder({
+        items: cart.map((item) => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+        })),
+        totalAmount: total,
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
       });
 
-      const data = await res.json().catch(() => ({}));
+      // ✅ 2. Call backend checkout endpoint (Hubtel integration)
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/checkout`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clientReference: order.clientReference,
+            items: cart,
+            total,
+            customer: {
+              name: formData.name,
+              email: formData.email,
+              phone: formData.phone,
+              address: formData.address,
+            },
+            user_id: user?.id,
+          }),
+        }
+      );
+
+      const data = await response.json().catch(() => ({}));
       console.log("Checkout response:", data);
 
-      if (!res.ok) throw new Error(data.error || "Checkout failed");
+      if (!response.ok)
+        throw new Error(data.error || "Failed to initiate checkout.");
 
-      // ✅ If backend created order & got Hubtel checkout URL
+      // ✅ 3. Redirect to Hubtel checkout page
       if (data.checkoutUrl) {
-        clearCart(); // empty cart immediately
-        window.location.href = data.checkoutUrl; // redirect to Hubtel
-      } else if (data.reference) {
-        // fallback: order created but no link (manual payment)
         clearCart();
-        alert(`Order placed successfully! Reference: ${data.reference}`);
-        window.location.href = `/track?ref=${data.reference}`;
+        window.location.href = data.checkoutUrl;
       } else {
-        throw new Error("No payment link or reference returned.");
+        alert("Order created but no payment link returned.");
       }
     } catch (err: any) {
       console.error("Checkout error:", err);
@@ -67,7 +92,9 @@ const Checkout: React.FC = () => {
       </h1>
 
       {cart.length === 0 ? (
-        <p className="text-gray-600">Your cart is empty. Add some products before checking out.</p>
+        <p className="text-gray-600">
+          Your cart is empty. Add some products before checking out.
+        </p>
       ) : (
         <form
           onSubmit={handleSubmit}
@@ -87,7 +114,9 @@ const Checkout: React.FC = () => {
               type="email"
               placeholder="Email Address"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               required
             />
             <Input
@@ -101,7 +130,9 @@ const Checkout: React.FC = () => {
               type="text"
               placeholder="Delivery Address"
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, address: e.target.value })
+              }
               required
             />
           </div>
