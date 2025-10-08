@@ -4,7 +4,7 @@ import { supabase } from "./supabaseClient.js";
 
 const router = express.Router();
 
-// Create new order
+// 🟢 Create new order
 router.post("/", async (req, res) => {
   try {
     const {
@@ -18,33 +18,44 @@ router.post("/", async (req, res) => {
       client_reference,
     } = req.body;
 
+    // ✅ Build order data
+    let orderData = {
+      total,
+      items,
+      customer_name,
+      customer_email,
+      customer_phone,
+      customer_address,
+      client_reference,
+      status: "pending",
+    };
+
+    // ✅ Only include user_id if it's valid (avoids FK violation)
+    if (user_id && user_id !== "undefined" && user_id !== "null") {
+      orderData.user_id = user_id;
+    }
+
+    // ✅ Insert order into Supabase
     const { data, error } = await supabase
       .from("orders")
-      .insert([
-        {
-          user_id,
-          total,
-          items,
-          customer_name,
-          customer_email,
-          customer_phone,
-          customer_address,
-          client_reference,
-        },
-      ])
+      .insert([orderData])
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ Supabase insert error:", error);
+      throw error;
+    }
 
-    res.json(data);
+    console.log("✅ Order created:", data.id);
+    res.status(201).json(data);
   } catch (err) {
-    console.error("Error creating order:", err.message);
-    res.status(500).send(err.message);
+    console.error("🔥 Error creating order:", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Get all orders for a user
+// 🟢 Get all orders for a specific user
 router.get("/user/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
@@ -59,8 +70,8 @@ router.get("/user/:userId", async (req, res) => {
 
     res.json(data);
   } catch (err) {
-    console.error("Error fetching orders:", err.message);
-    res.status(500).send(err.message);
+    console.error("🔥 Error fetching orders:", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
