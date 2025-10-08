@@ -18,6 +18,11 @@ router.post("/", async (req, res) => {
       client_reference,
     } = req.body;
 
+    // ✅ Validate required fields
+    if (!total || !items) {
+      return res.status(400).json({ error: "Missing required fields: total or items" });
+    }
+
     // ✅ Build order data
     let orderData = {
       total,
@@ -30,9 +35,15 @@ router.post("/", async (req, res) => {
       status: "pending",
     };
 
-    // ✅ Only include user_id if it's valid (avoids FK violation)
-    if (user_id && user_id !== "undefined" && user_id !== "null") {
+    // ✅ Only add user_id if it looks like a valid UUID (avoids FK errors)
+    const isValidUUID =
+      typeof user_id === "string" &&
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(user_id);
+
+    if (isValidUUID) {
       orderData.user_id = user_id;
+    } else {
+      console.warn("⚠️ No valid user_id provided, saving as guest order.");
     }
 
     // ✅ Insert order into Supabase
