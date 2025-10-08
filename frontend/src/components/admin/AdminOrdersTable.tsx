@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 
 type OrderItem = {
   id: string;
-  product_id: string;
-  quantity: number;
+  name?: string;
   price: number;
-  products?: { name: string };
+  quantity: number;
+  products?: { name: string }[];
 };
 
 type Order = {
@@ -17,6 +17,7 @@ type Order = {
   total: number;
   created_at: string;
   items?: OrderItem[];
+  shipping_info?: any;
 };
 
 const STATUS_OPTIONS = ["pending", "paid", "shipped", "completed", "cancelled"];
@@ -24,36 +25,44 @@ const STATUS_OPTIONS = ["pending", "paid", "shipped", "completed", "cancelled"];
 export default function AdminOrdersTable() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const API_BASE = import.meta.env.VITE_BACKEND_URL;
+  const ADMIN_KEY = import.meta.env.VITE_ADMIN_KEY;
 
+  // ✅ Fetch all orders
   const fetchOrders = async () => {
-    const res = await fetch(`${import.meta.env.VITE_ADMIN_API_BASE}/admin/orders`, {
-      headers: { "x-admin-key": import.meta.env.VITE_ADMIN_KEY },
+    const res = await fetch(`${API_BASE}/orders/admin/all`, {
+      headers: { "x-admin-key": ADMIN_KEY },
     });
     const data = await res.json();
-    setOrders(data);
+    setOrders(data || []);
   };
 
   useEffect(() => {
     fetchOrders();
   }, []);
 
+  // ✅ Update order status
   const updateStatus = async (orderId: string, newStatus: string) => {
-    await fetch(`${import.meta.env.VITE_ADMIN_API_BASE}/admin/orders/${orderId}`, {
+    await fetch(`${API_BASE}/orders/admin/${orderId}/status`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        "x-admin-key": import.meta.env.VITE_ADMIN_KEY,
+        "x-admin-key": ADMIN_KEY,
       },
       body: JSON.stringify({ status: newStatus }),
     });
+
     setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+      prev.map((o) =>
+        o.id === orderId ? { ...o, status: newStatus } : o
+      )
     );
   };
 
+  // ✅ View order details
   const fetchOrderDetails = async (orderId: string) => {
-    const res = await fetch(`${import.meta.env.VITE_ADMIN_API_BASE}/admin/orders/${orderId}`, {
-      headers: { "x-admin-key": import.meta.env.VITE_ADMIN_KEY },
+    const res = await fetch(`${API_BASE}/orders/${orderId}`, {
+      headers: { "x-admin-key": ADMIN_KEY },
     });
     const data = await res.json();
     setOrders((prev) =>
@@ -65,6 +74,7 @@ export default function AdminOrdersTable() {
   return (
     <div className="p-4 border rounded-lg shadow-sm bg-white mt-4">
       <h2 className="font-semibold mb-2">Orders</h2>
+
       <table className="w-full text-left border">
         <thead className="bg-gray-100">
           <tr>
@@ -129,7 +139,9 @@ export default function AdminOrdersTable() {
                       <tbody>
                         {o.items.map((item) => (
                           <tr key={item.id} className="border-t">
-                            <td className="p-2">{item.products?.name || item.product_id}</td>
+                            <td className="p-2">
+                              {item.name || "Unnamed product"}
+                            </td>
                             <td className="p-2">{item.quantity}</td>
                             <td className="p-2">₵{item.price}</td>
                           </tr>

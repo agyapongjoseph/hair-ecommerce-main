@@ -1,6 +1,7 @@
 // src/context/OrdersContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
+import { apiFetch } from "@/lib/api";
 
 export type OrderItem = {
   id: number | string;
@@ -11,6 +12,7 @@ export type OrderItem = {
 };
 
 export type Order = {
+  id?: string;
   clientReference: string;
   totalAmount: number;
   status: "pending" | "paid" | "failed" | "cancelled" | "shipped" | "delivered";
@@ -23,15 +25,11 @@ export type Order = {
 
 type OrdersContextType = {
   orders: Order[];
-  createOrder: (payload: Omit<Order, "clientReference" | "createdAt" | "status">) => Order;
+  createOrder: (payload: Omit<Order, "clientReference" | "createdAt" | "status">) => Promise<Order>;
   getOrder: (clientReference: string) => Order | undefined;
-  refresh: () => void;
-  updateStatus: (clientReference: string, status: Order["status"]) => void;
+  refresh: () => Promise<void>;
+  updateStatus: (clientReference: string, status: Order["status"]) => Promise<void>;
 };
-
-const KEY_PREFIX = "fa_orders_v1_";
-
-const storageKeyFor = (userId?: string | null) => KEY_PREFIX + (userId ?? "guest");
 
 const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
 
@@ -39,44 +37,87 @@ const makeRef = () => Date.now().toString(36) + Math.random().toString(36).slice
 
 export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const key = storageKeyFor(user?.id);
   const [orders, setOrders] = useState<Order[]>([]);
 
-  const load = () => {
-    const raw = localStorage.getItem(key);
-    setOrders(raw ? JSON.parse(raw) : []);
+  // ✅ Fetch user orders from backend
+  const loadOrders = async () => {
+    if (!user) return setOrders([]);
+    try {
+      const data = await apiFetch(`/orders/user/${user.id}`);
+      setOrders(data || []);
+    } catch (err) {
+      console.error("Failed to load orders:", err);
+    }
   };
 
-  useEffect(() => load(), [key]);
+  useEffect(() => {
+    loadOrders();
+  }, [user]);
 
-  const persist = (next: Order[]) => {
-    setOrders(next);
-    localStorage.setItem(key, JSON.stringify(next));
-  };
-
-  const createOrder = (payload: Omit<Order, "clientReference" | "createdAt" | "status">): Order => {
+  // ✅ Create a new order
+  const createOrder = async (
+    payload: Omit<Order, "clientReference" | "createdAt" | "status">
+  ): Promise<Order> => {
     const order: Order = {
       ...payload,
       clientReference: makeRef(),
       createdAt: new Date().toISOString(),
       status: "pending",
     };
-    const next = [order, ...orders];
-    persist(next);
-    return order;
+
+    try {
+      const newOrder = await apiFetch("/orders", {
+        method: "POST",
+        body: JSON.stringify({
+          user_id: user?.id,
+          items: order.items,
+          total: order.totalAmount,
+          customer_name: order.customerName,
+          customer_email: order.customerEmail,
+          customer_phone: order.customerPhone,
+        }),
+      });
+
+      // Update frontend state
+      setOrders((prev) => [newOrder, ...prev]);
+      return newOrder;
+    } catch (err) {
+      console.error("Failed to create order:", err);
+      throw err;
+    }
   };
 
-  const getOrder = (clientReference: string) => orders.find((o) => o.clientReference === clientReference);
+  // ✅ Get order by reference
+  const getOrder = (clientReference: string) =>
+    orders.find((o) => o.clientReference === clientReference);
 
-  const updateStatus = (clientReference: string, status: Order["status"]) => {
-    const next = orders.map((o) => (o.clientReference === clientReference ? { ...o, status } : o));
-    persist(next);
+  // ✅ Refresh manually (reload orders)
+  const refresh = async () => {
+    await loadOrders();
   };
 
-  const refresh = () => load();
+  // ✅ Update order status (for admin)
+  const updateStatus = async (clientReference: string, status: Order["status"]) => {
+    try {
+      await apiFetch(`/orders/update-status/${clientReference}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      });
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.clientReference === clientReference ? { ...o, status } : o
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update order status:", err);
+    }
+  };
 
   return (
-    <OrdersContext.Provider value={{ orders, createOrder, getOrder, refresh, updateStatus }}>
+    <OrdersContext.Provider
+      value={{ orders, createOrder, getOrder, refresh, updateStatus }}
+    >
       {children}
     </OrdersContext.Provider>
   );
