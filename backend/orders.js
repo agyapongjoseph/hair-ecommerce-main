@@ -20,7 +20,9 @@ router.post("/", async (req, res) => {
 
     // ✅ Validate required fields
     if (!total || !items) {
-      return res.status(400).json({ error: "Missing required fields: total or items" });
+      return res
+        .status(400)
+        .json({ error: "Missing required fields: total or items" });
     }
 
     // ✅ Build order data
@@ -35,15 +37,29 @@ router.post("/", async (req, res) => {
       status: "pending",
     };
 
-    // ✅ Only add user_id if it looks like a valid UUID (avoids FK errors)
-    const isValidUUID =
+    // ✅ Validate user_id and check if it exists in Supabase
+    if (
       typeof user_id === "string" &&
-      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(user_id);
+      /^[0-9a-fA-F-]{36}$/.test(user_id)
+    ) {
+      const { data: userCheck, error: userError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("id", user_id)
+        .single();
 
-    if (isValidUUID) {
-      orderData.user_id = user_id;
+      if (userError && userError.code !== "PGRST116") {
+        // not found or query error
+        console.warn("⚠️ Supabase user lookup error:", userError.message);
+      }
+
+      if (userCheck) {
+        orderData.user_id = user_id;
+      } else {
+        console.warn("⚠️ user_id not found in users table — saving as guest order.");
+      }
     } else {
-      console.warn("⚠️ No valid user_id provided, saving as guest order.");
+      console.warn("⚠️ Invalid user_id format — saving as guest order.");
     }
 
     // ✅ Insert order into Supabase
