@@ -230,14 +230,22 @@ app.post("/checkout", async (req, res) => {
       clientReference,
       checkoutId: hubtelData.data.checkoutId,
     });
-    } catch (err) {
-    console.error(
-      "Checkout error details:",
-      err.response ? await err.response.text() : err.message
-    );
+      } catch (err) {
+    if (err.response) {
+      try {
+        const text = await err.response.text();
+        console.error("Checkout error details (Hubtel response):", text);
+      } catch (parseErr) {
+        console.error("Checkout error details (could not read Hubtel response):", parseErr.message);
+      }
+    } else {
+      console.error("Checkout error details (General):", err.message);
+    }
+
     return res.status(400).json({ error: err.message });
   }
 });
+
 
 
 // Hubtel callback
