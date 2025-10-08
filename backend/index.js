@@ -188,9 +188,9 @@ app.post("/checkout", async (req, res) => {
       cancellationUrl: process.env.CANCEL_URL,
       merchantAccountNumber: process.env.HUBTEL_MERCHANT_ID,
       clientReference,
-      payeeName: customer.name,
-      payeeMobileNumber: msisdn,
-      payeeEmail: customer.email,
+      customerName: customer.name,
+      customerMsisdn: msisdn,
+      customerEmail: customer.email,
       paymentMethod: "ALL",
     };
 
@@ -230,10 +230,15 @@ app.post("/checkout", async (req, res) => {
       clientReference,
       checkoutId: hubtelData.data.checkoutId,
     });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+    } catch (err) {
+    console.error(
+      "Checkout error details:",
+      err.response ? await err.response.text() : err.message
+    );
+    return res.status(400).json({ error: err.message });
   }
 });
+
 
 // Hubtel callback
 app.post("/hubtel/callback", async (req, res) => {
