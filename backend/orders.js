@@ -102,4 +102,38 @@ router.get("/user/:userId", async (req, res) => {
   }
 });
 
+// 🟢 Get orders by email (for guest tracking)
+router.get("/guest/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { data, error } = await supabase
+      .from("orders")
+      .select("*")
+      .ilike("customer_email", email)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error("🔥 Error fetching guest orders:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🟢 Get all orders (for admin)
+router.get("/all", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error("🔥 Error fetching all orders:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

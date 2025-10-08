@@ -15,7 +15,13 @@ export type Order = {
   id?: string;
   clientReference: string;
   totalAmount: number;
-  status: "pending" | "paid" | "failed" | "cancelled" | "shipped" | "delivered";
+  status:
+    | "pending"
+    | "paid"
+    | "failed"
+    | "cancelled"
+    | "shipped"
+    | "delivered";
   createdAt: string;
   items: OrderItem[];
   customerName?: string;
@@ -25,23 +31,32 @@ export type Order = {
 
 type OrdersContextType = {
   orders: Order[];
-  createOrder: (payload: Omit<Order, "clientReference" | "createdAt" | "status">) => Promise<Order>;
+  createOrder: (
+    payload: Omit<Order, "clientReference" | "createdAt" | "status">
+  ) => Promise<Order>;
   getOrder: (clientReference: string) => Order | undefined;
   refresh: () => Promise<void>;
-  updateStatus: (clientReference: string, status: Order["status"]) => Promise<void>;
+  updateStatus: (
+    clientReference: string,
+    status: Order["status"]
+  ) => Promise<void>;
+  loadGuestOrders: (email: string) => Promise<void>;
 };
 
 const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
 
-const makeRef = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const makeRef = () =>
+  Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
-export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
 
-  // ✅ Fetch user orders from backend
+  // ✅ Fetch orders (user or guest)
   const loadOrders = async () => {
-    if (!user) return setOrders([]);
+    if (!user) return; // don't auto-load for guests
     try {
       const data = await apiFetch(`/orders/user/${user.id}`);
       setOrders(data || []);
@@ -54,7 +69,20 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     loadOrders();
   }, [user]);
 
-  // ✅ Create a new order
+  // ✅ Fetch guest orders manually by email
+  const loadGuestOrders = async (email: string) => {
+    if (!email) return;
+    try {
+      const data = await apiFetch(
+        `/orders/guest/${encodeURIComponent(email)}`
+      );
+      setOrders(data || []);
+    } catch (err) {
+      console.error("Failed to load guest orders:", err);
+    }
+  };
+
+  // ✅ Create a new order (works for both guests & users)
   const createOrder = async (
     payload: Omit<Order, "clientReference" | "createdAt" | "status">
   ): Promise<Order> => {
@@ -69,7 +97,7 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const newOrder = await apiFetch("/orders", {
         method: "POST",
         body: JSON.stringify({
-          user_id: user?.id,
+          user_id: user?.id || null,
           items: order.items,
           total: order.totalAmount,
           customer_name: order.customerName,
@@ -78,7 +106,6 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }),
       });
 
-      // Update frontend state
       setOrders((prev) => [newOrder, ...prev]);
       return newOrder;
     } catch (err) {
@@ -87,17 +114,20 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  // ✅ Get order by reference
+  // ✅ Get order by client reference
   const getOrder = (clientReference: string) =>
     orders.find((o) => o.clientReference === clientReference);
 
-  // ✅ Refresh manually (reload orders)
+  // ✅ Refresh user’s orders
   const refresh = async () => {
     await loadOrders();
   };
 
   // ✅ Update order status (for admin)
-  const updateStatus = async (clientReference: string, status: Order["status"]) => {
+  const updateStatus = async (
+    clientReference: string,
+    status: Order["status"]
+  ) => {
     try {
       await apiFetch(`/orders/update-status/${clientReference}`, {
         method: "PATCH",
@@ -116,7 +146,14 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   return (
     <OrdersContext.Provider
-      value={{ orders, createOrder, getOrder, refresh, updateStatus }}
+      value={{
+        orders,
+        createOrder,
+        getOrder,
+        refresh,
+        updateStatus,
+        loadGuestOrders,
+      }}
     >
       {children}
     </OrdersContext.Provider>
