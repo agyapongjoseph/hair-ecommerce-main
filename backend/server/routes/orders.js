@@ -1,9 +1,10 @@
+// backend/routes/orders.js
 import express from "express";
 import { supabase } from "../supabaseClient.js";
 
 const router = express.Router();
 
-// Create a new order
+// Create new order
 router.post("/", async (req, res) => {
   try {
     const {
