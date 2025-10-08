@@ -230,19 +230,22 @@ app.post("/checkout", async (req, res) => {
       clientReference,
       checkoutId: hubtelData.data.checkoutId,
     });
-      } catch (err) {
-  if (err.response) {
-    console.error("Hubtel response data:", err.response.data);
-    console.error("Hubtel response status:", err.response.status);
-    console.error("Hubtel response headers:", err.response.headers);
-  } else if (err.request) {
-    console.error("No response received from Hubtel:", err.request);
-  } else {
-    console.error("Error setting up Hubtel request:", err.message);
+     } catch (err) {
+  console.error("💥 Checkout error:", err.message);
+
+  // If fetch() itself threw an error
+  if (!err.response) {
+    console.error("⚠️ Likely invalid JSON or Hubtel returned non-200 response");
+  }
+
+  // Add this line to show Hubtel’s full text response if available
+  if (err.name === "FetchError") {
+    console.error("FetchError details:", err);
   }
 
   return res.status(400).json({ error: err.message });
 }
+
 });
 
 
