@@ -214,11 +214,16 @@ app.post("/checkout", async (req, res) => {
 
     // 🚀 Save pending order in Supabase (optional)
     await supabase.from("orders").insert([{
-      clientReference,
-      items,
-      total,
-      status: "pending",
-    }]);
+  clientReference,
+  items,
+  total,
+  status: "pending",
+  customer_name: customer.name,
+  customer_email: customer.email,
+  customer_phone: customer.phone,
+  customer_address: customer.address
+}]);
+
 
     return res.json({
       checkoutUrl: hubtelData.data.checkoutUrl,
