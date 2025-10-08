@@ -6,9 +6,6 @@ import fetch from "node-fetch";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
-import orderRoutes from "./server/routes/orders.js";
-import checkoutRoutes from "./server/routes/checkout.js";
-import callbackRoutes from "./server/routes/callback.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,19 +15,8 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 
 // --- Express app setup ---
 const app = express();
-const FRONTEND_URL = process.env.FRONTEND_URL || ["https://hair-ecommerce-main.vercel.app",
-  "http://localhost:5173",
-  "http://localhost:8081"];
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || FRONTEND_URL.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true
-}));
+const FRONTEND_URL = process.env.FRONTEND_URL || ["http://localhost:5173", "http://localhost:8081"];
+app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 app.use(express.json({ limit: "10mb" }));
 
 // --- Supabase setup ---
@@ -52,9 +38,6 @@ function adminAuth(req, res, next) {
 }
 
 // =============== SUPABASE PRODUCT ROUTES ===============
-app.use("/orders", orderRoutes(supabase, adminAuth));
-app.use("/checkout", checkoutRoutes(supabase));
-app.use("/", callbackRoutes(supabase));
 
 // Upload products
 app.post("/admin/upload-products", adminAuth, async (req, res) => {
@@ -167,9 +150,6 @@ app.delete("/admin/products/:id", adminAuth, async (req, res) => {
   return res.json({ message: "Deleted", id });
 });
 
-// =============== ORDER ROUTES ===============
-app.get("/", (_, res) => res.send("✅ Backend running"));
-
 // =============== HUBTEL PAYMENT ROUTES ===============
 
 // Checkout
@@ -188,9 +168,9 @@ app.post("/checkout", async (req, res) => {
       cancellationUrl: process.env.CANCEL_URL,
       merchantAccountNumber: process.env.HUBTEL_MERCHANT_ID,
       clientReference,
-      customerName: customer.name,
-      customerMsisdn: msisdn,
-      customerEmail: customer.email,
+      payeeName: customer.name,
+      payeeMobileNumber: msisdn,
+      payeeEmail: customer.email,
       paymentMethod: "ALL",
     };
 
@@ -214,42 +194,21 @@ app.post("/checkout", async (req, res) => {
 
     // 🚀 Save pending order in Supabase (optional)
     await supabase.from("orders").insert([{
-  clientReference,
-  items,
-  total,
-  status: "pending",
-  customer_name: customer.name,
-  customer_email: customer.email,
-  customer_phone: customer.phone,
-  customer_address: customer.address
-}]);
-
+      clientReference,
+      items,
+      total,
+      status: "PENDING",
+    }]);
 
     return res.json({
       checkoutUrl: hubtelData.data.checkoutUrl,
       clientReference,
       checkoutId: hubtelData.data.checkoutId,
     });
-     } catch (err) {
-  console.error("💥 Checkout error:", err.message);
-
-  // If fetch() itself threw an error
-  if (!err.response) {
-    console.error("⚠️ Likely invalid JSON or Hubtel returned non-200 response");
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
-
-  // Add this line to show Hubtel’s full text response if available
-  if (err.name === "FetchError") {
-    console.error("FetchError details:", err);
-  }
-
-  return res.status(400).json({ error: err.message });
-}
-
 });
-
-
-
 
 // Hubtel callback
 app.post("/hubtel/callback", async (req, res) => {
