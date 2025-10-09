@@ -1,8 +1,9 @@
 // src/pages/TrackOrder.tsx
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/context/AuthContext";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -15,8 +16,16 @@ const TrackOrder: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [order, setOrder] = useState<any | null>(null);
   const [error, setError] = useState("");
+  const { isAuthenticated } = useAuth();
+  const nav = useNavigate();
 
-  const API_BASE = import.meta.env.VITE_BACKEND_URL;
+  const API_BASE = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+
+  const formatCurrency = (v = 0) =>
+    new Intl.NumberFormat("en-GH", {
+      style: "currency",
+      currency: "GHS",
+    }).format(v);
 
   const handleLookup = async () => {
     if (!ref.trim()) return;
@@ -27,7 +36,6 @@ const TrackOrder: React.FC = () => {
     try {
       const res = await fetch(`${API_BASE}/orders/ref/${ref}`);
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.error || "Order not found");
       setOrder(data);
     } catch (err: any) {
@@ -43,60 +51,102 @@ const TrackOrder: React.FC = () => {
   }, [refFromQuery]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 max-w-lg">
       <h1 className="text-2xl font-bold mb-6">Track Your Order</h1>
 
-      <div className="max-w-md space-y-4">
-        {/* 🟢 Input to enter order reference */}
+      <div className="space-y-4">
+        {/* 🟢 Input for order reference */}
         <Input
           value={ref}
           onChange={(e) => setRef(e.target.value)}
-          placeholder="Enter your order reference"
+          placeholder="Enter your order reference (e.g. REF-20251008123045)"
+          className="border border-gray-300"
         />
 
-        <Button onClick={handleLookup} disabled={loading}>
+        <Button onClick={handleLookup} disabled={loading} className="w-full">
           {loading ? "Loading..." : "Track Order"}
         </Button>
 
+        {/* Auto-tracking info */}
+        {refFromQuery && !order && !error && (
+          <p className="text-sm text-muted-foreground text-center">
+            Auto-tracking order <span className="font-medium">{refFromQuery}</span>...
+          </p>
+        )}
+
         {/* 🟠 Error message */}
-        {error && <div className="text-red-500 text-sm">{error}</div>}
+        {error && (
+          <div className="text-red-600 text-sm border border-red-200 p-3 rounded bg-red-50">
+            {error}
+          </div>
+        )}
 
         {/* 🟢 Order details */}
         {order && (
-          <div className="border p-4 rounded shadow-sm mt-4 bg-card">
-            <div className="mb-2 font-medium">
-              Reference: {order.clientReference || order.reference}
-            </div>
+          <div className="border rounded-lg p-5 bg-white shadow-sm mt-6">
+            <div className="flex justify-between items-center mb-3">
+              <div>
+                <h2 className="font-semibold text-lg">
+                  Ref: {order.clientReference || order.reference}
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {new Date(order.createdAt).toLocaleString()}
+                </p>
+              </div>
 
-            <div className="text-sm mb-2">
-              Status:{" "}
               <span
-                className={`font-bold ${
-                  order.status === "paid"
-                    ? "text-green-600"
+                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  order.status === "delivered"
+                    ? "bg-green-100 text-green-700"
+                    : order.status === "paid"
+                    ? "bg-blue-100 text-blue-700"
                     : order.status === "pending"
-                    ? "text-yellow-600"
-                    : "text-red-600"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : order.status === "failed"
+                    ? "bg-red-100 text-red-700"
+                    : "bg-gray-100 text-gray-700"
                 }`}
               >
                 {order.status}
               </span>
             </div>
 
-            <div className="text-sm mb-2">
-              Total Amount: ₵
-              {Number(order.totalAmount || order.total).toFixed(2)}
+            <div className="mb-4">
+              <p className="text-sm text-gray-600">
+                Total Amount:{" "}
+                <span className="font-semibold">
+                  {formatCurrency(order.totalAmount || order.total)}
+                </span>
+              </p>
             </div>
 
-            <div className="mb-2 font-medium">Items:</div>
-            <ul className="list-disc pl-5 text-sm">
-              {order.items?.map((it: any, i: number) => (
-                <li key={i}>
-                  {it.name} × {it.quantity} — ₵
-                  {(it.price * it.quantity).toFixed(2)}
-                </li>
-              ))}
-            </ul>
+            <div>
+              <h3 className="font-medium mb-2">Items</h3>
+              <ul className="space-y-2 text-sm">
+                {order.items?.map((it: any, i: number) => (
+                  <li
+                    key={i}
+                    className="flex justify-between border-b border-gray-100 pb-1"
+                  >
+                    <span>{it.name} × {it.quantity}</span>
+                    <span>{formatCurrency(it.price * it.quantity)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Navigation back to Orders for logged-in users */}
+        {isAuthenticated && (
+          <div className="mt-6 text-center">
+            <Button
+              variant="outline"
+              onClick={() => nav("/orders")}
+              className="text-sm"
+            >
+              ← Back to My Orders
+            </Button>
           </div>
         )}
       </div>
