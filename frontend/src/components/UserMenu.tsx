@@ -4,6 +4,8 @@ import { createPortal } from "react-dom";
 import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import UserAvatar from "./UserAvatar";
 
 /**
  * Simple, robust UserMenu:
@@ -13,6 +15,7 @@ import { useNavigate } from "react-router-dom";
  */
 
 const UserMenu: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -98,15 +101,16 @@ const UserMenu: React.FC = () => {
   return (
     <>
       <Button
-        variant="ghost"
-        size="sm"
-        onClick={handleToggle}
-        className="hover-gold focus:outline-none"
-        aria-expanded={open}
-        aria-haspopup="menu"
-      >
-        <User className="h-5 w-5" />
-      </Button>
+      variant="ghost"
+      size="sm"
+      onClick={handleToggle}
+      className="hover-gold focus:outline-none p-1"
+      aria-expanded={open}
+      aria-haspopup="menu"
+    >
+      <UserAvatar user={user || { name: "Guest" }} />
+    </Button>
+
 
       {open &&
         createPortal(
