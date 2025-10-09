@@ -1,6 +1,7 @@
 // backend/orders.js
 import express from "express";
 import { supabase } from "./supabaseClient.js";
+import { sendEmail } from "./utils/sendEmail.js"; 
 
 const router = express.Router();
 
@@ -26,6 +27,9 @@ router.post("/", async (req, res) => {
     }
 
     // ✅ Build order data
+    const clientReference =
+      client_reference || "REF-" + Date.now().toString(36).toUpperCase();
+
     let orderData = {
       total,
       items,
@@ -33,7 +37,7 @@ router.post("/", async (req, res) => {
       customer_email,
       customer_phone,
       customer_address,
-      client_reference,
+      client_reference: clientReference,
       status: "pending",
     };
 
@@ -75,6 +79,41 @@ router.post("/", async (req, res) => {
     }
 
     console.log("✅ Order created:", data.id);
+
+    // ✅ Send confirmation email if email provided
+    if (data) {
+  const order = data;
+
+  const productList = order.items
+    .map(
+      (it) =>
+        `<li>${it.name} × ${it.quantity} — ₵${(
+          it.price * it.quantity
+        ).toFixed(2)}</li>`
+    )
+    .join("");
+
+  const html = `
+    <h2>Order Confirmation</h2>
+    <p>Dear ${order.customer_name},</p>
+    <p>Thank you for shopping with us! Your order has been placed successfully.</p>
+    <p><strong>Order Reference:</strong> ${order.client_reference}</p>
+    <p><strong>Total:</strong> ₵${Number(order.total).toFixed(2)}</p>
+    <h3>Items:</h3>
+    <ul>${productList}</ul>
+    <p>You can track your order anytime at:<br>
+    <a href="${process.env.FRONTEND_URL}/track-order?ref=${order.client_reference}">
+      Track My Order
+    </a></p>
+    <p>We'll notify you when your payment is confirmed.</p>
+    <br>
+    <p>– Farida Abdul Hair</p>
+  `;
+
+  if (order.customer_email) {
+    sendEmail(order.customer_email, "Order Confirmation", html);
+  }
+}
     res.status(201).json(data);
   } catch (err) {
     console.error("🔥 Error creating order:", err.message);

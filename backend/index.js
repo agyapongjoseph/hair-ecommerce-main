@@ -7,6 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
 import ordersRouter from "./orders.js";
+import { sendEmail } from "./utils/sendEmail.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -216,14 +217,60 @@ app.post("/checkout", async (req, res) => {
 app.post("/hubtel/callback", async (req, res) => {
   try {
     console.log("=== Hubtel callback ===", req.body);
-    const clientReference = req.body?.Data?.ClientReference || req.body?.clientReference;
+    const clientReference =
+      req.body?.Data?.ClientReference || req.body?.clientReference;
     const status = req.body?.Status || req.body?.Data?.Status;
 
     if (clientReference) {
-      await supabase.from("orders").update({ status }).eq("clientReference", clientReference);
+      const { data: orders } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("clientReference", clientReference)
+        .limit(1);
+
+      if (orders?.length) {
+        const order = orders[0];
+        await supabase
+          .from("orders")
+          .update({ status })
+          .eq("clientReference", clientReference);
+
+        // ✅ Send confirmation only if payment was successful
+        if (status === "Success" || status === "PAID") {
+          const productList = order.items
+            .map(
+              (it) =>
+                `<li>${it.name} × ${it.quantity} — ₵${(
+                  it.price * it.quantity
+                ).toFixed(2)}</li>`
+            )
+            .join("");
+
+          const html = `
+            <h2>Payment Successful 🎉</h2>
+            <p>Dear ${order.customer_name},</p>
+            <p>We’ve received your payment for order <strong>${clientReference}</strong>.</p>
+            <p><strong>Total Paid:</strong> ₵${Number(order.total).toFixed(2)}</p>
+            <h3>Items:</h3>
+            <ul>${productList}</ul>
+            <p>You can check the delivery progress anytime here:</p>
+            <a href="${process.env.FRONTEND_URL}/track-order?ref=${clientReference}">
+              Track My Order
+            </a>
+            <br><br>
+            <p>Thank you for shopping with Farida Abdul Hair!</p>
+          `;
+
+          if (order.customer_email) {
+            sendEmail(order.customer_email, "Payment Confirmed", html);
+          }
+        }
+      }
     }
+
     return res.status(200).json({ received: true });
   } catch (err) {
+    console.error("❌ Hubtel callback error:", err);
     return res.status(500).json({ error: err.message });
   }
 });
