@@ -308,7 +308,7 @@ app.get("/check-status/:clientReference", async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
-// temporary test endpoint - remove after verifying
+// 🧪 Temporary test endpoint — remove after verifying email works
 app.post("/test-email", async (req, res) => {
   const { to, subject, html } = req.body || {};
   if (!to) return res.status(400).json({ error: "to required" });
@@ -324,6 +324,7 @@ app.post("/test-email", async (req, res) => {
     return res.status(500).json({ error: err.message || String(err) });
   }
 });
+
 // =============== START SERVER ===============
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
