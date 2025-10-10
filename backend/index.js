@@ -17,17 +17,27 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 
 // --- Express app setup ---
 const app = express();
-const FRONTEND_URL = process.env.FRONTEND_URL || [ "https://hair-ecommerce-main.vercel.app", "http://localhost:5173", "http://localhost:8081"];
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-}));
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://hair-ecommerce-main.vercel.app";
+// Define allowed origins list (for prod + local dev)
+const allowedOrigins = [
+  FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:8081",
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log("🚫 Blocked CORS origin:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: "10mb" }));
 app.use("/orders", ordersRouter);
 
@@ -296,6 +306,18 @@ app.get("/check-status/:clientReference", async (req, res) => {
     return res.json(data);
   } catch (err) {
     return res.status(500).json({ error: err.message });
+  }
+});
+// =============== TEST EMAIL ROUTE (temporary) ===============
+app.post("/test-email", async (req, res) => {
+  const { to, subject, html } = req.body || {};
+  if (!to) return res.status(400).json({ error: "to required" });
+  try {
+    const result = await sendEmail(to, subject || "Test email", html || "<p>Hi — this is a test email!</p>");
+    return res.json({ ok: true, result });
+  } catch (err) {
+    console.error("test-email error:", err);
+    return res.status(500).json({ error: err.message || String(err) });
   }
 });
 
