@@ -18,20 +18,16 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 // --- Express app setup ---
 const app = express();
 const FRONTEND_URL = process.env.FRONTEND_URL || [ "https://hair-ecommerce-main.vercel.app", "http://localhost:5173", "http://localhost:8081"];
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like Postman) or those in the list
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log("❌ Blocked by CORS:", origin);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json({ limit: "10mb" }));
 app.use("/orders", ordersRouter);
 
