@@ -1,7 +1,9 @@
-// backend/supabaseClient.js
+import dotenv from "dotenv";
+dotenv.config({ path: "./.env" }); // add this
+
 import { createClient } from "@supabase/supabase-js";
 
-// Use backend environment variables (set in Render dashboard)
+// Use backend environment variables
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
