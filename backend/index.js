@@ -308,19 +308,22 @@ app.get("/check-status/:clientReference", async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
-// =============== TEST EMAIL ROUTE (temporary) ===============
+// temporary test endpoint - remove after verifying
 app.post("/test-email", async (req, res) => {
   const { to, subject, html } = req.body || {};
   if (!to) return res.status(400).json({ error: "to required" });
   try {
-    const result = await sendEmail(to, subject || "Test email", html || "<p>Hi — this is a test email!</p>");
+    const result = await sendEmail(
+      to,
+      subject || "Test email",
+      html || "<p>Hi — test</p>"
+    );
     return res.json({ ok: true, result });
   } catch (err) {
     console.error("test-email error:", err);
     return res.status(500).json({ error: err.message || String(err) });
   }
 });
-
 // =============== START SERVER ===============
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
