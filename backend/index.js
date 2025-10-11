@@ -17,14 +17,6 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 
 // --- Express app setup ---
 const app = express();
-
-app.get("/debug-admin", (req, res) => {
-  res.json({
-    backendKey: process.env.ADMIN_KEY,
-    received: req.headers["x-admin-key"],
-    match: req.headers["x-admin-key"] === process.env.ADMIN_KEY,
-  });
-});
 const FRONTEND_URL = process.env.FRONTEND_URL || "https://hair-ecommerce-main.vercel.app";
 // Define allowed origins list (for prod + local dev)
 const allowedOrigins = [
