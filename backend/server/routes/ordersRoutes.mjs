@@ -1,7 +1,9 @@
 import { Router } from "express";
-import { getAllOrders, updateOrderStatus } from "../controllers/ordersController.mjs";
+import { getAllOrders, getOrderByUserId, placeOrder, updateOrderStatus } from "../controllers/ordersController.mjs";
 
 export const ordersRouter = Router();
 
 ordersRouter.get("/all", getAllOrders);
 ordersRouter.patch("/:id", updateOrderStatus);
+ordersRouter.get("/user/:userId", getOrderByUserId);
+ordersRouter.post("/place-order", placeOrder);

@@ -58,8 +58,8 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({
   const loadOrders = async () => {
     if (!user) return; // don't auto-load for guests
     try {
-      const res = await fetch(`https://hair-ecommerce-main.onrender.com/orders/user/${user.id}`);
-      const data = await res.json();
+      const res = await fetch(`https://hair-ecommerce-main.onrender.com/api/orders/user/${user.id}`);
+      const data = await res.json();  
       console.log("Loaded user orders:", data);
       setOrders(data || []);
     } catch (err) {
@@ -96,7 +96,7 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     try {
-      const newOrder = await apiFetch("/orders", {
+      const nOrder = await fetch("https://hair-ecommerce-main.onrender.com/api/orders/place-order", {
         method: "POST",
         body: JSON.stringify({
           user_id: user?.id || null,
@@ -108,6 +108,7 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({
         }),
       });
 
+      const newOrder = await nOrder.json();
       setOrders((prev) => [newOrder, ...prev]);
       return newOrder;
     } catch (err) {
