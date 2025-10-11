@@ -25,24 +25,24 @@ export default function AdminProductsTable() {
     lengths: "",
   });
 
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_ADMIN_API_BASE}/admin/products`,
-        {
-          headers: { "x-admin-key": import.meta.env.VITE_ADMIN_KEY },
-        }
-      );
-      if (!res.ok) throw new Error("Failed to fetch admin products");
-      const data = await res.json();
-      setProducts(data || []);
-    } catch (err) {
-      console.error("fetchProducts error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchProducts = async () => {
+  setLoading(true);
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_ADMIN_API_BASE}/admin/products`,
+      {
+        headers: { "x-admin-key": import.meta.env.VITE_ADMIN_KEY },
+      }
+    );
+    if (!res.ok) throw new Error("Failed to fetch admin products");
+    const json = await res.json();
+    setProducts(json.data || []); // ✅ Access json.data instead of json directly
+  } catch (err) {
+    console.error("fetchProducts error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchProducts();
