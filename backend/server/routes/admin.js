@@ -39,3 +39,22 @@ router.patch("/orders/:id", async (req, res) => {
   res.json({ ...order, items });
 
 });
+
+// ✅ Get all products (admin)
+router.get("/products", async (req, res) => {
+  const adminKey = req.headers["x-admin-key"];
+
+  // Protect the route
+  if (adminKey !== process.env.ADMIN_KEY) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const { data, error } = await supabase.from("products").select("*");
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json(data);
+});
+
