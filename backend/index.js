@@ -25,19 +25,7 @@ const allowedOrigins = [
   "http://localhost:8081",
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log("🚫 Blocked CORS origin:", origin);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors())
 app.use(express.json({ limit: "10mb" }));
 app.use("/orders", ordersRouter);
 
