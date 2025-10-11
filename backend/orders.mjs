@@ -1,12 +1,13 @@
 // backend/orders.js
 import express from "express";
+import { Router } from "express";
 import { supabase } from "./supabaseClient.js";
-import { sendEmail } from "./utils/sendEmail.js"; 
+// import { sendEmail } from "./utils/sendEmail.js"; 
 
-const router = express.Router();
+const ordersRouter = Router();
 
 // 🟢 Create new order
-router.post("/", async (req, res) => {
+ordersRouter.post("/", async (req, res) => {
   try {
     const {
       user_id,
@@ -122,7 +123,7 @@ router.post("/", async (req, res) => {
 });
 
 // 🟢 Get all orders for a specific user
-router.get("/user/:userId", async (req, res) => {
+ordersRouter.get("/user/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -142,7 +143,7 @@ router.get("/user/:userId", async (req, res) => {
 });
 
 // 🟢 Get orders by email (for guest tracking)
-router.get("/guest/:email", async (req, res) => {
+ordersRouter.get("/guest/:email", async (req, res) => {
   try {
     const { email } = req.params;
     const { data, error } = await supabase
@@ -160,7 +161,7 @@ router.get("/guest/:email", async (req, res) => {
 });
 
 // 🟢 Get all orders (for admin)
-router.get("/all", async (req, res) => {
+ordersRouter.get("/all", async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("orders")
@@ -175,4 +176,5 @@ router.get("/all", async (req, res) => {
   }
 });
 
-export default router;
+orders
+

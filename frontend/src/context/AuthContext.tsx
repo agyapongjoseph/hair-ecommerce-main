@@ -55,25 +55,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // Signup
-  const signup = async (name: string, email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: name },
-      },
-    });
-    if (error) throw error;
+const signup = async (name: string, email: string, password: string) => {
+  // 1. Sign up user in Supabase Auth
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name: name },
+    },
+  });
 
-    const newUser: User = {
-      id: data.user?.id || "",
-      email: data.user?.email || "",
-      name: data.user?.user_metadata?.full_name || null,
-    };
-    setUser(newUser);
-    return newUser;
+  if (error) throw error;
+
+  const user = data.user;
+
+  if (user) {
+    console.log(`Created user:`, user);
+    // 2. Insert user into your custom "users" table
+    const { error: insertError } = await supabase
+      .from("users")
+      .insert([
+        {
+          id: user.id,            // same ID as auth.users
+          email: user.email,      // email address
+          name: name,             // full name
+          role: "user",
+          password: password       // default role (or "customer", etc.)
+        },
+      ]);
+
+    if (insertError) {
+      console.error("Error inserting into users table:", insertError);
+      throw insertError;
+    }
+  }
+
+  // 3. Update local state
+  const newUser: User = {
+    id: user?.id || "",
+    email: user?.email || "",
+    name: user?.user_metadata?.full_name || null,
   };
+  setUser(newUser);
+  return newUser;
+};
+
 
   // Login
   const login = async (email: string, password: string) => {

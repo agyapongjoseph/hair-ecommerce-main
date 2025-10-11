@@ -58,7 +58,9 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({
   const loadOrders = async () => {
     if (!user) return; // don't auto-load for guests
     try {
-      const data = await apiFetch(`/orders/user/${user.id}`);
+      const res = await fetch(`https://hair-ecommerce-main.onrender.com/orders/user/${user.id}`);
+      const data = await res.json();
+      console.log("Loaded user orders:", data);
       setOrders(data || []);
     } catch (err) {
       console.error("Failed to load orders:", err);

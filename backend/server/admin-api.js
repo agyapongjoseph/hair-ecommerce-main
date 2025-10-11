@@ -6,6 +6,9 @@ const xlsx = require('xlsx');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 
+
+export const adminRouterTwo = express.Router();
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -206,7 +209,7 @@ app.delete('/admin/products/:id', adminAuth, async (req, res) => {
 });
 
 // Orders
-app.get('/admin/orders', adminAuth, async (req, res) => {
+adminRouterTwo.get('/admin/orders', adminAuth, async (req, res) => {
   try {
     // join orders -> order_items and product names via two separate selects (Supabase doesn't support complex joins easily without SQL)
     const { data: orders, error: ordersErr } = await supabase

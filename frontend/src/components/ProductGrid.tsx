@@ -59,6 +59,8 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
     );
   };
 
+  console.log("Current products:", products);
+
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
       !filters.search ||

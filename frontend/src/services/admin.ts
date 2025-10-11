@@ -1,7 +1,7 @@
 // src/services/admin.ts
 import axios from 'axios';
 
-const ADMIN_API_BASE = import.meta.env.VITE_ADMIN_API_BASE || 'http://localhost:8080';
+const ADMIN_API_BASE = import.meta.env.VITE_ADMIN_API_BASE || 'https://hair-ecommerce-main.onrender.com';
 
 const adminApi = axios.create({
   baseURL: ADMIN_API_BASE,

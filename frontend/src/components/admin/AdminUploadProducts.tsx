@@ -24,7 +24,7 @@ export default function AdminUploadProducts() {
 
         // send JSON array to backend
         const res = await fetch(
-          `${import.meta.env.VITE_ADMIN_API_BASE}/admin/upload-products`,
+          `https://hair-ecommerce-main.onrender.com/admin/upload-products`,
           {
             method: "POST",
             headers: {

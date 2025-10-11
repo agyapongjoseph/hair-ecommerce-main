@@ -1,7 +1,6 @@
-// src/components/admin/AdminRoute.tsx
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { supabase } from "@/lib/supabaseClient"; // make sure you have this setup
+import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/hooks/useAuth";
 
 type Props = {
@@ -20,7 +19,8 @@ const AdminRoute = ({ children }: Props) => {
         return;
       }
 
-      // Fetch user role from Supabase "users" table
+      console.log(`Fetching role for user ID: ${user.id}`);
+
       const { data, error } = await supabase
         .from("users")
         .select("role")
@@ -31,25 +31,33 @@ const AdminRoute = ({ children }: Props) => {
         console.error("Error fetching user role:", error);
         setRole(null);
       } else {
+        console.log(`Fetched role data: ${data?.role}`);
         setRole(data?.role || null);
       }
 
+      // ✅ Delay the end of checking until after role is updated
       setCheckingRole(false);
     };
 
-    fetchRole();
-  }, [user]);
+    if (!loading) {
+      fetchRole();
+    }
+  }, [user, loading]);
 
+  // ✅ Don’t render anything while checking or fetching
   if (loading || checkingRole) {
     return <div className="p-4">Loading...</div>;
   }
 
-  // If not logged in, go to login page
+  // ✅ Only now, role has been updated
+  console.log(`User role is: ${role}`);
+
+  // If not logged in
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // If logged in but not admin, go to homepage
+  // If not admin
   if (role !== "admin") {
     return <Navigate to="/" replace />;
   }

@@ -3,7 +3,7 @@ export async function apiFetch(
   path: string,
   options: RequestInit = {}
 ): Promise<any> {
-  const base = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+  const base = import.meta.env.VITE_BACKEND_URL || "https://hair-ecommerce-main.onrender.com";
   const res = await fetch(base + path, {
     headers: {
       "Content-Type": "application/json",

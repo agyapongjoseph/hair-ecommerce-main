@@ -1,22 +1,29 @@
 // server/routes/admin.js
 import express from "express";
+import { Router } from "express"; 
 import { createClient } from "@supabase/supabase-js";
 
-const router = express.Router();
+
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-// ✅ Get all orders
-router.get("/orders", async (req, res) => {
-  const { data, error } = await supabase
-    .from("orders")
-    .select("id, user_id, status, total, created_at");
+export const getAllOrders = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-  if (error) return res.status(400).json({ error: error.message });
-  res.json(data);
-});
+    if (error) throw error;
+    res.json(data);
+    console.log("Fetched all orders:", data); // Debug log
+  } catch (err) {
+    console.error("🔥 Error fetching all orders:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+};
 
-// ✅ Update order status
-router.patch("/orders/:id", async (req, res) => {
+
+export const updateOrderStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
@@ -38,23 +45,4 @@ router.patch("/orders/:id", async (req, res) => {
 
   res.json({ ...order, items });
 
-});
-
-// ✅ Get all products (admin)
-router.get("/products", async (req, res) => {
-  const adminKey = req.headers["x-admin-key"];
-
-  // Protect the route
-  if (adminKey !== process.env.ADMIN_KEY) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  const { data, error } = await supabase.from("products").select("*");
-
-  if (error) {
-    return res.status(500).json({ error: error.message });
-  }
-
-  res.json(data);
-});
-
+};
