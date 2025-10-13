@@ -46,7 +46,7 @@ type OrdersContextType = {
 const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
 
 const makeRef = () =>
-  Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  "REF-" + Date.now().toString(36).toUpperCase();
 
 export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -54,14 +54,17 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
 
-  // ✅ Fetch orders (user or guest)
+  // ✅ Load orders for logged-in users
   const loadOrders = async () => {
-    if (!user) return; // don't auto-load for guests
+    if (!user) return;
     try {
-      const res = await fetch(`https://hair-ecommerce-main.onrender.com/api/orders/user/${user.id}`);
-      const data = await res.json();  
-      console.log("Loaded user orders:", data);
-      setOrders(data || []);
+      const data = await apiFetch(`/api/orders/user/${user.id}`);
+      setOrders(
+        data.map((o: any) => ({
+          ...o,
+          clientReference: o.clientReference || o.reference,
+        }))
+      );
     } catch (err) {
       console.error("Failed to load orders:", err);
     }
@@ -71,20 +74,23 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({
     loadOrders();
   }, [user]);
 
-  // ✅ Fetch guest orders manually by email
+  // ✅ Guest orders by email
   const loadGuestOrders = async (email: string) => {
     if (!email) return;
     try {
-      const data = await apiFetch(
-        `/orders/guest/${encodeURIComponent(email)}`
+      const data = await apiFetch(`/api/orders/guest/${encodeURIComponent(email)}`);
+      setOrders(
+        data.map((o: any) => ({
+          ...o,
+          clientReference: o.clientReference || o.reference,
+        }))
       );
-      setOrders(data || []);
     } catch (err) {
       console.error("Failed to load guest orders:", err);
     }
   };
 
-  // ✅ Create a new order (works for both guests & users)
+  // ✅ Create new order
   const createOrder = async (
     payload: Omit<Order, "clientReference" | "createdAt" | "status">
   ): Promise<Order> => {
@@ -96,17 +102,22 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     try {
-      const nOrder = await fetch("https://hair-ecommerce-main.onrender.com/api/orders/place-order", {
-        method: "POST",
-        body: JSON.stringify({
-          user_id: user?.id || null,
-          items: order.items,
-          total: order.totalAmount,
-          customer_name: order.customerName,
-          customer_email: order.customerEmail,
-          customer_phone: order.customerPhone,
-        }),
-      });
+      const nOrder = await fetch(
+        "https://hair-ecommerce-main.onrender.com/api/orders/place-order",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: user?.id || null,
+            items: order.items,
+            total: order.totalAmount,
+            customer_name: order.customerName,
+            customer_email: order.customerEmail,
+            customer_phone: order.customerPhone,
+            clientReference: order.clientReference,
+          }),
+        }
+      );
 
       const newOrder = await nOrder.json();
       setOrders((prev) => [newOrder, ...prev]);
@@ -117,22 +128,19 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // ✅ Get order by client reference
   const getOrder = (clientReference: string) =>
     orders.find((o) => o.clientReference === clientReference);
 
-  // ✅ Refresh user’s orders
   const refresh = async () => {
     await loadOrders();
   };
 
-  // ✅ Update order status (for admin)
   const updateStatus = async (
     clientReference: string,
     status: Order["status"]
   ) => {
     try {
-      await apiFetch(`/orders/update-status/${clientReference}`, {
+      await apiFetch(`/api/orders/update-status/${clientReference}`, {
         method: "PATCH",
         body: JSON.stringify({ status }),
       });

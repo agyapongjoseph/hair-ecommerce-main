@@ -1,4 +1,4 @@
-// server/routes/admin.js
+// server/controllers/ordersController.mjs 
 import express from "express";
 import { Router } from "express"; 
 import { createClient } from "@supabase/supabase-js";

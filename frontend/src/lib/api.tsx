@@ -3,8 +3,14 @@ export async function apiFetch(
   path: string,
   options: RequestInit = {}
 ): Promise<any> {
-  const base = import.meta.env.VITE_BACKEND_URL || "https://hair-ecommerce-main.onrender.com";
-  const res = await fetch(base + path, {
+  // Always include /api/ in every call
+  const base =
+    import.meta.env.VITE_BACKEND_URL || "https://hair-ecommerce-main.onrender.com";
+
+  // Ensure path starts correctly
+  const fullPath = path.startsWith("/api/") ? path : `/api${path}`;
+
+  const res = await fetch(base + fullPath, {
     headers: {
       "Content-Type": "application/json",
       ...options.headers,

@@ -19,7 +19,8 @@ const TrackOrder: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const nav = useNavigate();
 
-  const API_BASE = import.meta.env.VITE_BACKEND_URL || "https://hair-ecommerce-main.onrender.com";
+  const API_BASE =
+    import.meta.env.VITE_BACKEND_URL || "https://hair-ecommerce-main.onrender.com";
 
   const formatCurrency = (v = 0) =>
     new Intl.NumberFormat("en-GH", {
@@ -34,10 +35,16 @@ const TrackOrder: React.FC = () => {
     setOrder(null);
 
     try {
-      const res = await fetch(`${API_BASE}/orders/ref/${ref}`);
+      const res = await fetch(`${API_BASE}/api/orders/ref/${ref}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Order not found");
-      setOrder(data);
+
+      const normalized = {
+        ...data,
+        clientReference: data.clientReference || data.reference,
+      };
+
+      setOrder(normalized);
     } catch (err: any) {
       console.error("Error tracking order:", err);
       setError(err.message || "Failed to fetch order");
@@ -55,11 +62,10 @@ const TrackOrder: React.FC = () => {
       <h1 className="text-2xl font-bold mb-6">Track Your Order</h1>
 
       <div className="space-y-4">
-        {/* 🟢 Input for order reference */}
         <Input
           value={ref}
           onChange={(e) => setRef(e.target.value)}
-          placeholder="Enter your order reference (e.g. REF-20251008123045)"
+          placeholder="Enter your order reference (e.g. REF-ABC123)"
           className="border border-gray-300"
         />
 
@@ -67,84 +73,57 @@ const TrackOrder: React.FC = () => {
           {loading ? "Loading..." : "Track Order"}
         </Button>
 
-        {/* Auto-tracking info */}
-        {refFromQuery && !order && !error && (
-          <p className="text-sm text-muted-foreground text-center">
-            Auto-tracking order <span className="font-medium">{refFromQuery}</span>...
-          </p>
-        )}
-
-        {/* 🟠 Error message */}
         {error && (
           <div className="text-red-600 text-sm border border-red-200 p-3 rounded bg-red-50">
             {error}
           </div>
         )}
 
-        {/* 🟢 Order details */}
         {order && (
           <div className="border rounded-lg p-5 bg-white shadow-sm mt-6">
             <div className="flex justify-between items-center mb-3">
               <div>
                 <h2 className="font-semibold text-lg">
-                  Ref: {order.clientReference || order.reference}
+                  Ref: {order.clientReference}
                 </h2>
                 <p className="text-sm text-gray-500">
                   {new Date(order.createdAt).toLocaleString()}
                 </p>
               </div>
-
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  order.status === "delivered"
-                    ? "bg-green-100 text-green-700"
-                    : order.status === "paid"
-                    ? "bg-blue-100 text-blue-700"
-                    : order.status === "pending"
-                    ? "bg-yellow-100 text-yellow-700"
-                    : order.status === "failed"
-                    ? "bg-red-100 text-red-700"
-                    : "bg-gray-100 text-gray-700"
-                }`}
-              >
+              <span className={`px-3 py-1 rounded-full text-sm capitalize ${
+                order.status === "delivered"
+                  ? "bg-green-100 text-green-700"
+                  : order.status === "paid"
+                  ? "bg-blue-100 text-blue-700"
+                  : order.status === "pending"
+                  ? "bg-yellow-100 text-yellow-700"
+                  : order.status === "failed"
+                  ? "bg-red-100 text-red-700"
+                  : "bg-gray-100 text-gray-700"
+              }`}>
                 {order.status}
               </span>
             </div>
 
-            <div className="mb-4">
-              <p className="text-sm text-gray-600">
-                Total Amount:{" "}
-                <span className="font-semibold">
-                  {formatCurrency(order.totalAmount || order.total)}
-                </span>
-              </p>
-            </div>
+            <p className="text-sm mb-2">
+              Total Amount: <strong>{formatCurrency(order.totalAmount || order.total)}</strong>
+            </p>
 
-            <div>
-              <h3 className="font-medium mb-2">Items</h3>
-              <ul className="space-y-2 text-sm">
-                {order.items?.map((it: any, i: number) => (
-                  <li
-                    key={i}
-                    className="flex justify-between border-b border-gray-100 pb-1"
-                  >
-                    <span>{it.name} × {it.quantity}</span>
-                    <span>{formatCurrency(it.price * it.quantity)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <h3 className="font-medium mb-2">Items</h3>
+            <ul className="space-y-2 text-sm">
+              {order.items?.map((it: any, i: number) => (
+                <li key={i} className="flex justify-between border-b border-gray-100 pb-1">
+                  <span>{it.name} × {it.quantity}</span>
+                  <span>{formatCurrency(it.price * it.quantity)}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
-        {/* Navigation back to Orders for logged-in users */}
         {isAuthenticated && (
           <div className="mt-6 text-center">
-            <Button
-              variant="outline"
-              onClick={() => nav("/orders")}
-              className="text-sm"
-            >
+            <Button variant="outline" onClick={() => nav("/orders")} className="text-sm">
               ← Back to My Orders
             </Button>
           </div>

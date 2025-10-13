@@ -1,3 +1,4 @@
+// backend/server/routes/ordersRoutes.mjs
 import { Router } from "express";
 import { getAllOrders, getOrderByUserId, placeOrder, updateOrderStatus } from "../controllers/ordersController.mjs";
 
