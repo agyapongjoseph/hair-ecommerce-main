@@ -2,7 +2,7 @@ import { useSearchParams, Link } from "react-router-dom";
 
 export default function OrderSuccess() {
   const [params] = useSearchParams();
-  const ref = params.get("ref");
+  const clientReference = params.get("clientReference");
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -14,7 +14,7 @@ export default function OrderSuccess() {
       </p>
       <p className="mt-4 text-lg">
         <strong>Order Reference:</strong>{" "}
-        <span className="text-blue-600">{ref}</span>
+        <span className="text-blue-600">{clientReference}</span>
       </p>
       <p className="mt-2 text-sm text-gray-600">
         Use this reference to track your order.
@@ -22,7 +22,7 @@ export default function OrderSuccess() {
 
       <div className="mt-6 flex gap-4">
         <Link
-          to={`/track-order?ref=${ref}`}
+          to={`/track-order?ref=${clientReference}`}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg"
         >
           Track My Order
