@@ -14,7 +14,7 @@ import Orders from "@/pages/Orders";
 import TrackOrder from "@/pages/TrackOrder";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminRoute from "@/components/admin/AdminRoute"; // ✅ import
-import OrderSuccess from "./pages/orderSuccess";
+import OrderSuccess from "./pages/OrderSuccess";
 
 const queryClient = new QueryClient();
 
