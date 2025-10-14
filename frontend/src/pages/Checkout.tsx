@@ -5,11 +5,14 @@ import { useOrders } from "@/context/OrdersContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
+
 
 const Checkout: React.FC = () => {
   const { cart, clearCart } = useCart();
   const { createOrder } = useOrders();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -65,10 +68,16 @@ const Checkout: React.FC = () => {
       );
 
       const data = await response.json().catch(() => ({}));
+      // Save order data and redirect to success page
+
       console.log("Checkout response:", data);
 
       if (!response.ok)
         throw new Error(data.error || "Failed to initiate checkout.");
+
+      if (data.client_reference) {
+        navigate(`/order-success?ref=${data.client_reference}`);
+      }
 
       // ✅ 3. Redirect to Hubtel checkout page
       if (data.checkoutUrl) {

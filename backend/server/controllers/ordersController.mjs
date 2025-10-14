@@ -184,4 +184,41 @@ export const placeOrder = async (req, res) => {
     console.error("🔥 Error creating order:", err.message);
     res.status(500).json({ error: err.message });
   }
-}
+};
+
+export const getOrderByReference = async (req, res) => {
+  const { clientReference } = req.params;
+
+  try {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("*")
+      .or(`client_reference.eq.${clientReference},reference.eq.${clientReference}`)
+      .maybeSingle(); // returns null if not found, instead of throwing
+
+    if (error) {
+      console.error("Supabase error:", error);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    if (!data) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    // Normalize field names for frontend
+    const normalized = {
+      ...data,
+      clientReference: data.client_reference || data.reference,
+      createdAt: data.created_at,
+      totalAmount: data.total,
+      items: Array.isArray(data.items) ? data.items : [],
+    };
+
+    res.json(normalized);
+  } catch (err) {
+    console.error("Error fetching order:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+

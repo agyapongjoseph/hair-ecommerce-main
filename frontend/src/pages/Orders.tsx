@@ -1,5 +1,4 @@
-// src/pages/Orders.tsx
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useOrders } from "@/context/OrdersContext";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -31,7 +30,7 @@ const Orders: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">My Orders</h1>
 
-      {/* ✅ If no user logged in, allow guest lookup */}
+      {/* ✅ Guest order lookup */}
       {!user && (
         <form
           onSubmit={handleGuestLookup}
@@ -55,8 +54,9 @@ const Orders: React.FC = () => {
         </form>
       )}
 
+      {/* ✅ No orders found */}
       {orders.length === 0 ? (
-        <p className="text-muted-foreground text-center mt-6">
+        <p className="text-center text-muted-foreground mt-6">
           {user
             ? "You have no orders yet."
             : "No orders found. Enter your email above to check guest orders."}
@@ -65,28 +65,60 @@ const Orders: React.FC = () => {
         <div className="space-y-4">
           {orders.map((o) => (
             <div
-              key={o.clientReference}
-              className="border p-4 rounded flex justify-between items-center"
+              key={o.id || o.clientReference}
+              className="border p-4 rounded flex justify-between items-center bg-white shadow-sm"
             >
               <div>
-                <div className="font-medium">Ref: {o.clientReference}</div>
-                <div className="text-sm text-muted-foreground">
+                <div className="font-medium">
+                  <strong>Reference:</strong> {o.clientReference}
+                </div>
+                <div className="text-sm text-gray-500">
                   {new Date(o.createdAt).toLocaleString()}
                 </div>
-                <div className="text-sm">Items: {o.items.length}</div>
+
+                <div className="text-sm mt-1">
+                  Items: {o.items?.length || 0}
+                </div>
+
+                {/* ✅ Show product names and inches */}
+                <ul className="text-sm text-gray-700 mt-1 list-disc pl-4">
+                  {o.items?.map((it, idx) => (
+                    <li key={idx}>
+                      {it.name}
+                      {it.inch ? ` - ${it.inch}"` : ""} × {it.quantity}
+                    </li>
+                  ))}
+                </ul>
               </div>
 
+              {/* ✅ Right side (price + status + button) */}
               <div className="text-right">
-                <div className="font-bold">{formatCurrency(o.totalAmount)}</div>
-                <div className="text-sm mb-2 capitalize">{o.status}</div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => nav(`/track?ref=${o.clientReference}`)}
-                  >
-                    Track
-                  </Button>
+                <div className="font-bold">
+                  {formatCurrency(o.totalAmount)}
                 </div>
+                <div
+                  className={`text-sm mb-2 capitalize ${
+                    o.status === "delivered"
+                      ? "text-green-600"
+                      : o.status === "paid"
+                      ? "text-blue-600"
+                      : o.status === "pending"
+                      ? "text-yellow-600"
+                      : o.status === "failed"
+                      ? "text-red-600"
+                      : "text-gray-600"
+                  }`}
+                >
+                  {o.status}
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    nav(`/track?ref=${o.clientReference}`)
+                  }
+                >
+                  Track
+                </Button>
               </div>
             </div>
           ))}

@@ -6,6 +6,7 @@ import { apiFetch } from "@/lib/api";
 export type OrderItem = {
   id: number | string;
   name: string;
+  inch?: string;
   price: number;
   quantity: number;
   image?: string;
@@ -62,9 +63,16 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({
       setOrders(
         data.map((o: any) => ({
           ...o,
-          clientReference: o.clientReference || o.reference,
+          clientReference:
+            o.clientReference ||
+            o.reference ||
+            o.client_reference ||
+            o.ref ||
+            o.id,
+          createdAt: o.createdAt || o.created_at,
         }))
       );
+      console.log("Loaded orders:", data);
     } catch (err) {
       console.error("Failed to load orders:", err);
     }

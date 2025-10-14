@@ -14,6 +14,7 @@ import Orders from "@/pages/Orders";
 import TrackOrder from "@/pages/TrackOrder";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminRoute from "@/components/admin/AdminRoute"; // ✅ import
+import OrderSuccess from "./pages/orderSuccess";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/orders" element={<Orders />} />
+            <Route path="/order-success" element={<OrderSuccess />} />
             <Route path="/track" element={<TrackOrder />} />
 
             {/* Admin route (protected) */}

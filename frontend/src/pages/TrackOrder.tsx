@@ -54,8 +54,11 @@ const TrackOrder: React.FC = () => {
   };
 
   useEffect(() => {
-    if (refFromQuery) handleLookup();
-  }, [refFromQuery]);
+  if (refFromQuery && refFromQuery !== "null" && refFromQuery !== "undefined") {
+    handleLookup();
+  }
+}, [refFromQuery]);
+
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-lg">
@@ -112,7 +115,7 @@ const TrackOrder: React.FC = () => {
             <h3 className="font-medium mb-2">Items</h3>
             <ul className="space-y-2 text-sm">
               {order.items?.map((it: any, i: number) => (
-                <li key={i} className="flex justify-between border-b border-gray-100 pb-1">
+                <li key={it.id || i} className="flex justify-between border-b border-gray-100 pb-1">
                   <span>{it.name} × {it.quantity}</span>
                   <span>{formatCurrency(it.price * it.quantity)}</span>
                 </li>
