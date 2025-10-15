@@ -75,7 +75,7 @@ export default function AdminOrdersTable() {
   };
 
   const fetchOrderDetails = async (orderId: string) => {
-    const res = await fetch(`https://hair-ecommerce-main.onrender.com/orders/${orderId}`, {
+    const res = await fetch(`https://hair-ecommerce-main.onrender.com/api/orders/${orderId}`, {
       headers: { "x-admin-key": ADMIN_KEY },
     });
     const data = await res.json();
