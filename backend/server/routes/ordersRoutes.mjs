@@ -5,7 +5,7 @@ import { getAllOrders, getOrderByReference, getOrderByUserId, placeOrder, update
 export const ordersRouter = Router();
 
 ordersRouter.get("/all", getAllOrders);
-ordersRouter.patch("/:id", updateOrderStatus);
+ordersRouter.patch("/admin/:id/status", updateOrderStatus);
 ordersRouter.get("/user/:userId", getOrderByUserId);
 ordersRouter.post("/place-order", placeOrder);
 ordersRouter.get("/ref/:clientReference", getOrderByReference);

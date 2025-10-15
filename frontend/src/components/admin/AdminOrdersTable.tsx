@@ -60,7 +60,7 @@ export default function AdminOrdersTable() {
   }, []);
 
   const updateStatus = async (orderId: string, newStatus: string) => {
-    await fetch(`${API_BASE}/orders/admin/${orderId}/status`, {
+    await fetch(`${API_BASE}/api/orders/admin/${orderId}/status`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
