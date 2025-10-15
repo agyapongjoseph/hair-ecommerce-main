@@ -176,5 +176,36 @@ ordersRouter.get("/all", async (req, res) => {
   }
 });
 
-orders
+// 🟢 Update order status (admin)
+ordersRouter.patch("/admin/:id/status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Optionally, require admin key for security
+    const adminKey = req.headers["x-admin-key"];
+    if (adminKey !== process.env.ADMIN_KEY) {
+      return res.status(403).json({ error: "Unauthorized: Invalid admin key" });
+    }
+
+    // Update status in Supabase
+    const { data, error } = await supabase
+      .from("orders")
+      .update({ status })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("❌ Supabase update error:", error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    res.json({ message: "Order status updated successfully", order: data });
+  } catch (err) {
+    console.error("🔥 Error updating order status:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
