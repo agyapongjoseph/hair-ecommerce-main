@@ -24,20 +24,20 @@ type Filters = {
 type HeaderProps = {
   filters: Filters;
   setFilters: React.Dispatch<React.SetStateAction<Filters>>;
+  isMenuOpen: boolean;
+  setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const Header = ({ filters, setFilters }: HeaderProps) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const Header = ({ filters, setFilters, isMenuOpen, setIsMenuOpen }: HeaderProps) => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
   const {cart, cartCount, removeFromCart} = useCart();
   const navigate = useNavigate();
 
   const navigation = [
     { name: "Home", href: "#home" },
     { name: "Products", href: "#products" },
-    { name: "About", href: "#about" },
+    { name: "Testimonials", href: "#testimonial" },
     { name: "Contact", href: "#contact" },
   ];
 
@@ -72,7 +72,7 @@ const Header = ({ filters, setFilters }: HeaderProps) => {
     }).format(value);
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm">
+      <header className="sticky top-0 z-50 bg-black backdrop-blur-sm border-b border-border shadow-sm border-b border-yellow-600 shadow-md">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
@@ -89,16 +89,16 @@ const Header = ({ filters, setFilters }: HeaderProps) => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-            {navigation.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className="text-sm xl:text-base text-foreground hover-gold font-elegant font-medium transition-all duration-300"
-              >
-                {item.name}
-              </a>
-            ))}
-          </nav>
+          {navigation.map((item) => (
+            <a
+              key={item.name}
+              href={item.href}
+              className="text-sm xl:text-base text-white hover:text-yellow-400 transition-all duration-300 font-medium"
+            >
+              {item.name}
+            </a>
+          ))}
+        </nav>
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center space-x-3 xl:space-x-4 relative">
@@ -106,7 +106,7 @@ const Header = ({ filters, setFilters }: HeaderProps) => {
             <Button
               variant="ghost"
               size="sm"
-              className="hover-gold"
+              className="text-white hover:text-yellow-50 transition-all duration-300"
               onClick={() => setShowSearch(!showSearch)}
             >
               <Search className="h-5 w-5" />
@@ -207,7 +207,7 @@ const Header = ({ filters, setFilters }: HeaderProps) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="hover-gold relative"
+                   className="relative text-white hover:text-yellow-50 transition-all duration-300"
                 >
                   <ShoppingBag className="h-5 w-5" />
                   {cartCount > 0 && (
@@ -285,7 +285,7 @@ const Header = ({ filters, setFilters }: HeaderProps) => {
               variant="ghost"
               size="sm"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="hover-gold"
+              className="text-white hover:text-yellow-500 transition-all duration-300"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>

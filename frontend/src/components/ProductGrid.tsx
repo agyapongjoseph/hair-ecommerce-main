@@ -28,6 +28,7 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLengths, setSelectedLengths] = useState<Record<string, string>>({});
+  const [visibleCount, setVisibleCount] = useState(15); // 5 per row × 3 rows
 
   useEffect(() => {
     async function load() {
@@ -61,26 +62,22 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
     const matchesSearch =
       !filters.search ||
       product.name.toLowerCase().includes(filters.search.toLowerCase());
-
     const matchesLength =
       !filters.length ||
       (product.lengths &&
         product.lengths.some((len) =>
           len.toLowerCase().includes(filters.length.toLowerCase())
         ));
-
     const matchesColor =
       !filters.color ||
       (product.colors &&
         product.colors.some((c) =>
           c.toLowerCase().includes(filters.color.toLowerCase())
         ));
-
     const matchesTexture =
       !filters.texture ||
       (product.textures &&
         product.textures.toLowerCase().includes(filters.texture.toLowerCase()));
-
     const matchesMinPrice = !filters.minPrice || product.price >= filters.minPrice;
     const matchesMaxPrice = !filters.maxPrice || product.price <= filters.maxPrice;
 
@@ -93,6 +90,18 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
       matchesMaxPrice
     );
   });
+
+  const productsPerPage = 15;
+  const visibleProducts = filteredProducts.slice(0, visibleCount);
+
+  const handleViewMore = () => {
+    if (visibleCount < filteredProducts.length) {
+      setVisibleCount((prev) => prev + productsPerPage);
+    } else {
+      setVisibleCount(productsPerPage);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   if (loading) {
     return (
@@ -136,27 +145,27 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-          {filteredProducts.map((product, index) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
+          {visibleProducts.map((product, index) => (
             <Card
               key={product.id}
-              className="group overflow-hidden border-0 shadow-card hover-lift bg-card animate-scale-in transition-all duration-300"
+              className="group overflow-hidden border-0 shadow-sm hover:shadow-md bg-card transition-all duration-300 hover:scale-[1.02] rounded-xl"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
+              {/* Product Image */}
               <div className="relative overflow-hidden bg-gray-50">
-                {/* Product Image */}
-                <div className="aspect-square w-full overflow-hidden">
+                <div className="aspect-[4/5] w-full overflow-hidden">
                   <img
                     src={product.image_url || "/placeholder.png"}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
 
-                {/* Stock Status Overlay */}
+                {/* Stock Overlay */}
                 {product.stock <= 0 && (
                   <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                    <Badge variant="secondary" className="text-sm sm:text-base lg:text-lg font-bold px-4 py-2">
+                    <Badge variant="secondary" className="text-xs font-bold px-3 py-1.5">
                       Out of Stock
                     </Badge>
                   </div>
@@ -164,22 +173,22 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
 
                 {/* Discount Badge */}
                 {product.previous_price && product.previous_price > product.price && (
-                  <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
-                    <div className="bg-gradient-to-r from-red-600 to-red-500 text-white text-xs sm:text-sm font-bold px-2.5 py-1.5 rounded-lg shadow-lg">
+                  <div className="absolute top-2 left-2 z-10">
+                    <div className="bg-gradient-to-r from-red-600 to-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md">
                       SAVE {Math.round(((product.previous_price - product.price) / product.previous_price) * 100)}%
                     </div>
                   </div>
                 )}
 
-                {/* Heart Icon */}
+                {/* Favorite */}
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-white/95 hover:bg-white h-9 w-9 sm:h-10 sm:w-10 rounded-full shadow-md transition-all z-10"
+                  className="absolute top-2 right-2 bg-white/95 hover:bg-white h-7 w-7 rounded-full shadow-sm"
                   onClick={() => toggleFavorite(product.id)}
                 >
                   <Heart
-                    className={`h-4 w-4 sm:h-5 sm:w-5 transition-all ${
+                    className={`h-3.5 w-3.5 transition-all ${
                       favorites.includes(product.id)
                         ? "text-red-500 fill-red-500 scale-110"
                         : "text-gray-600"
@@ -188,19 +197,19 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
                 </Button>
               </div>
 
-              <CardContent className="p-4 sm:p-5 lg:p-6">
-                {/* Product Name */}
-                <h3 className="font-elegant font-bold text-base sm:text-lg lg:text-xl mb-2 text-card-foreground line-clamp-2 min-h-[3rem]">
+              {/* Card Content */}
+              <CardContent className="p-3">
+                <h3 className="font-elegant font-bold text-sm mb-1 text-card-foreground line-clamp-2 min-h-[2.3rem]">
                   {product.name}
                 </h3>
 
                 {/* Length Selector */}
                 {product.lengths && product.lengths.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                  <div className="mb-2">
+                    <h4 className="text-[11px] font-semibold text-gray-700 mb-1">
                       Select Length:
                     </h4>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1">
                       {product.lengths.map((len) => {
                         const isSelected = selectedLengths[product.id] === len;
                         return (
@@ -212,15 +221,12 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
                                 [product.id]: len,
                               }))
                             }
-                            className={`
-                              px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold 
-                              border-2 transition-all duration-200 min-w-[3rem] sm:min-w-[3.5rem]
+                            className={`px-2 py-1 rounded-md text-[11px] font-semibold border transition-all duration-200
                               ${
                                 isSelected
-                                  ? "bg-gradient-to-r from-amber-400 to-yellow-400 text-gray-900 border-amber-500 shadow-md scale-105"
+                                  ? "bg-gradient-to-r from-amber-400 to-yellow-400 text-gray-900 border-amber-500 shadow-sm"
                                   : "bg-white text-gray-700 border-gray-300 hover:border-amber-400 hover:bg-amber-50"
-                              }
-                            `}
+                              }`}
                           >
                             {len}"
                           </button>
@@ -230,28 +236,28 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
                   </div>
                 )}
 
-                {/* Price Section */}
-                <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">
+                {/* Price */}
+                <div className="flex items-baseline gap-1.5 mb-2">
+                  <span className="text-base font-bold text-primary">
                     {formatCurrency(product.price)}
                   </span>
                   {product.previous_price && product.previous_price > product.price && (
-                    <span className="text-sm sm:text-base text-muted-foreground line-through">
+                    <span className="text-xs text-muted-foreground line-through">
                       {formatCurrency(product.previous_price)}
                     </span>
                   )}
                 </div>
 
-                {/* Stock Indicator */}
+                {/* Stock Warning */}
                 {product.stock > 0 && product.stock <= 10 && (
-                  <p className="text-xs sm:text-sm text-orange-600 font-medium mb-3">
-                    Only {product.stock} left in stock!
+                  <p className="text-[11px] text-orange-600 font-medium mb-2">
+                    Only {product.stock} left!
                   </p>
                 )}
 
-                {/* Add to Cart Button */}
+                {/* Add to Cart */}
                 <Button
-                  className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-gray-900 font-bold text-sm sm:text-base py-5 sm:py-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-gray-900 font-bold text-xs py-2.5 rounded-md shadow-sm hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={product.stock <= 0}
                   onClick={() => {
                     if (product.lengths && product.lengths.length > 0 && !selectedLengths[product.id]) {
@@ -272,18 +278,31 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
                     });
 
                     toast.success("Added to cart! 🎉", {
-                      description: `${product.name} (${selectedLengths[product.id] || "Default"}"${selectedLengths[product.id] ? '' : ' length'})`,
+                      description: `${product.name} (${selectedLengths[product.id] || "Default"}"${selectedLengths[product.id] ? "" : " length"})`,
                       duration: 2500,
                     });
                   }}
                 >
-                  <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 mr-2 group-hover:scale-110 transition-transform" />
-                  {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
+                  <ShoppingCart className="h-3.5 w-3.5 mr-1" />
+                  {product.stock > 0 ? "Add" : "Out"}
                 </Button>
               </CardContent>
             </Card>
           ))}
         </div>
+
+        {/* View More Button */}
+        {filteredProducts.length > productsPerPage && (
+          <div className="flex justify-center mt-10">
+            <Button
+              onClick={handleViewMore}
+              variant="outline"
+              className="px-6 py-3 text-sm font-semibold rounded-full border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300"
+            >
+              {visibleCount < filteredProducts.length ? "View More" : "Show Less"}
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );

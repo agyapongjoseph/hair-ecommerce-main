@@ -28,16 +28,9 @@ const Hero = () => {
       <div className="relative z-10 container mx-auto px-4 text-center">
         <div className="max-w-4xl mx-auto animate-fade-in-up">
           {/* Discount Badge */}
-          <div className="inline-flex items-center space-x-2 bg-primary/20 border border-primary rounded-full px-6 py-2 mb-8 animate-scale-in">
-            <Star className="h-5 w-5 text-primary fill-primary" />
-            <span className="text-primary font-elegant font-bold text-sm md:text-base">
-              UP To 20% OFF
-            </span>
-            <Star className="h-5 w-5 text-primary fill-primary" />
-          </div>
 
           {/* Main Heading */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-luxury font-bold mb-6 text-white leading-tight">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-luxury font-bold mb-6 text-white leading-tight mt-14">
             Premium
             <span className="block text-gradient-gold animate-shimmer bg-gradient-to-r from-primary via-primary-glow to-primary bg-[length:200%_100%]">
               Human Hair
@@ -68,20 +61,21 @@ const Hero = () => {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             {/* Shop Now → Checkout */}
-            <Button
+           <Button
               size="lg"
-              className="bg-primary hover:bg-primary-glow text-black font-elegant font-bold px-8 py-6 text-lg shadow-gold hover-lift group"
-              onClick={() => navigate("/checkout")}
+              className="bg-black text-[#FFD700] font-elegant font-bold px-8 py-6 text-lg rounded-2xl 
+              border-2 border-black hover:border-[#FFD700] hover:shadow-[0_0_15px_#FFD700] 
+              transition-all duration-300 group"
+              onClick={() => navigate('/checkout')}
             >
               Shop Now
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-
             {/* View Catalog → Scroll to Products */}
             <Button
               variant="outline"
               size="lg"
-              className="border-white text-white hover:bg-white hover:text-black font-elegant font-bold px-8 py-6 text-lg hover-lift"
+              className="border-white text-gray-500 hover:bg-white hover:text-black font-elegant font-bold px-8 py-6 text-lg hover-lift"
               onClick={() => {
                 const el = document.getElementById("products");
                 if (el) el.scrollIntoView({ behavior: "smooth" });
@@ -111,13 +105,6 @@ const Hero = () => {
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-          <div className="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
         </div>
       </div>
     </section>
