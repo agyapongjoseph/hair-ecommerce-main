@@ -72,7 +72,7 @@ const Header = ({ filters, setFilters, isMenuOpen, setIsMenuOpen }: HeaderProps)
     }).format(value);
 
   return (
-      <header className="sticky top-0 z-50 bg-black backdrop-blur-sm border-b border-border shadow-sm border-b border-yellow-600 shadow-md">
+      <header className="sticky top-0 z-[1000] bg-black backdrop-blur-sm border-b border-border shadow-sm border-b border-yellow-600 shadow-md">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
@@ -217,7 +217,7 @@ const Header = ({ filters, setFilters, isMenuOpen, setIsMenuOpen }: HeaderProps)
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 xl:w-96 p-4">
+              <PopoverContent className="w-80 xl:w-96 p-4 z-[9999] relative">
                 <h3 className="font-bold mb-3">My Cart</h3>
                 {cart.length === 0 ? (
                   <p className="text-sm text-gray-500 text-center py-4">Your cart is empty.</p>

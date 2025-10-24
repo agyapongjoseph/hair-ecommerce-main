@@ -204,13 +204,14 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
                 </h3>
 
                 {/* Length Selector */}
-                {product.lengths && product.lengths.length > 0 && (
+                {product.length_prices && product.length_prices.length > 0 && (
                   <div className="mb-2">
                     <h4 className="text-[11px] font-semibold text-gray-700 mb-1">
                       Select Length:
                     </h4>
                     <div className="flex flex-wrap gap-1">
-                      {product.lengths.map((len) => {
+                      {product.length_prices.map((lp: any) => {
+                        const len = lp.length;
                         const isSelected = selectedLengths[product.id] === len;
                         return (
                           <button
@@ -235,12 +236,29 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
                     </div>
                   </div>
                 )}
-
                 {/* Price */}
                 <div className="flex items-baseline gap-1.5 mb-2">
                   <span className="text-base font-bold text-primary">
-                    {formatCurrency(product.price)}
+                    {formatCurrency(
+                      product.length_prices?.find((lp: any) => lp.length === selectedLengths[product.id])?.price ||
+                      product.length_prices?.[0]?.price ||
+                      product.price
+                    )}
                   </span>
+
+                  {(() => {
+                    const selectedLP = product.length_prices?.find(
+                      (lp: any) => lp.length === selectedLengths[product.id]
+                    );
+                    if (selectedLP?.previous_price && selectedLP.previous_price > selectedLP.price) {
+                      return (
+                        <span className="text-xs text-muted-foreground line-through ml-1">
+                          {formatCurrency(selectedLP.previous_price)}
+                        </span>
+                      );
+                    }
+                    return null;
+                  })()}
                   {product.previous_price && product.previous_price > product.price && (
                     <span className="text-xs text-muted-foreground line-through">
                       {formatCurrency(product.previous_price)}
@@ -268,15 +286,18 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
                       return;
                     }
 
+                    const selectedLength = selectedLengths[product.id];
+                    const selectedLP = product.length_prices?.find((lp: any) => lp.length === selectedLength);
+
                     addToCart({
                       id: product.id,
                       name: product.name,
                       image: product.image_url || "/placeholder.png",
-                      price: product.price,
+                      price: selectedLP?.price || product.length_prices?.[0]?.price || 0,
                       quantity: 1,
-                      length: selectedLengths[product.id] || "Default",
+                      length: selectedLength || "Default",
                     });
-
+                    
                     toast.success("Added to cart! 🎉", {
                       description: `${product.name} (${selectedLengths[product.id] || "Default"}"${selectedLengths[product.id] ? "" : " length"})`,
                       duration: 2500,

@@ -1,16 +1,20 @@
-// src/components/admin/AdminProductsTable.tsx
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+type LengthPrice = {
+  length: string;
+  price: number;
+  previous_price?: number | null;
+};
+
 type Product = {
   id: string;
   name: string;
-  price: number;
-  previous_price?: number;
   stock: number;
   category?: string;
   lengths?: string[] | null;
+  length_prices?: LengthPrice[];
 };
 
 export default function AdminProductsTable() {
@@ -19,14 +23,12 @@ export default function AdminProductsTable() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    price: "",
-    previous_price: "",
     stock: "",
     lengths: "",
+    length_prices: [] as LengthPrice[],
   });
 
-  console.log("Products state:", products);
-
+  // ✅ Fetch products
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -35,7 +37,6 @@ export default function AdminProductsTable() {
       });
       if (!res.ok) throw new Error("Failed to fetch admin products");
       const json = await res.json();
-      console.log("Fetched products:", json);
       setProducts(json);
     } catch (err) {
       console.error("fetchProducts error:", err);
@@ -51,30 +52,65 @@ export default function AdminProductsTable() {
     return () => window.removeEventListener("products:updated", handler);
   }, []);
 
+  // ✅ Begin edit
   const startEdit = (p: Product) => {
     setEditingId(p.id);
     setFormData({
-      name: p.name,
-      price: String(p.price),
-      previous_price: p.previous_price ? String(p.previous_price) : "",
-      stock: String(p.stock),
+      name: p.name || "",
+      stock: String(p.stock || ""),
       lengths: Array.isArray(p.lengths) ? p.lengths.join(", ") : "",
+      length_prices: p.length_prices ? [...p.length_prices] : [],
     });
   };
 
+  // ✅ Safe input handler (prevents re-creation/focus loss)
+  const handleFormChange = (key: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // ✅ Update nested length_prices safely
+  const handleLengthPriceChange = (index: number, key: keyof LengthPrice, value: string) => {
+    setFormData((prev) => {
+      const updated = prev.length_prices.map((lp, i) =>
+        i === index
+          ? {
+              ...lp,
+              [key]:
+                key === "price" || key === "previous_price"
+                  ? Number(value)
+                  : value,
+            }
+          : lp
+      );
+      return { ...prev, length_prices: updated };
+    });
+  };
+
+  const addLengthPrice = () => {
+    setFormData((prev) => ({
+      ...prev,
+      length_prices: [...prev.length_prices, { length: "", price: 0 }],
+    }));
+  };
+
+  const removeLengthPrice = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      length_prices: prev.length_prices.filter((_, i) => i !== index),
+    }));
+  };
+
+  // ✅ Save changes
   const handleSave = async (id: string) => {
     try {
       const updates = {
-        name: formData.name,
-        price: Number(formData.price),
-        previous_price: formData.previous_price
-          ? Number(formData.previous_price)
-          : null,
+        name: formData.name.trim(),
         stock: Number(formData.stock),
         lengths: formData.lengths
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean),
+        length_prices: formData.length_prices.filter((lp) => lp.length && lp.price),
       };
 
       const res = await fetch(
@@ -103,6 +139,7 @@ export default function AdminProductsTable() {
     }
   };
 
+  // ✅ Delete
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
     try {
@@ -122,6 +159,7 @@ export default function AdminProductsTable() {
     }
   };
 
+  // ✅ Inline editor
   const EditForm = ({ product }: { product: Product }) => (
     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-3">
       <h3 className="text-sm font-semibold mb-3 text-gray-700">Edit Product</h3>
@@ -129,36 +167,61 @@ export default function AdminProductsTable() {
         <Input
           placeholder="Name"
           value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        />
-        <Input
-          type="number"
-          placeholder="Price"
-          step="0.01"
-          value={formData.price}
-          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-        />
-        <Input
-          type="number"
-          placeholder="Previous Price"
-          value={formData.previous_price}
-          onChange={(e) =>
-            setFormData({ ...formData, previous_price: e.target.value })
-          }
+          onChange={(e) => handleFormChange("name", e.target.value)}
         />
         <Input
           type="number"
           placeholder="Stock"
           value={formData.stock}
-          onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+          onChange={(e) => handleFormChange("stock", e.target.value)}
         />
         <Input
           placeholder="Lengths (comma separated)"
-          className="sm:col-span-2 lg:col-span-2"
+          className="sm:col-span-2 lg:col-span-3"
           value={formData.lengths}
-          onChange={(e) => setFormData({ ...formData, lengths: e.target.value })}
+          onChange={(e) => handleFormChange("lengths", e.target.value)}
         />
       </div>
+
+      {/* Length prices */}
+      <div className="mt-4">
+        <h4 className="text-sm font-medium mb-2 text-gray-700">Length Prices</h4>
+        {formData.length_prices.map((lp, index) => (
+          <div key={index} className="flex gap-2 mb-2 items-center border-b pb-2 last:border-0">
+            <Input
+              placeholder="Length (e.g. 12)"
+              value={lp.length}
+              onChange={(e) => handleLengthPriceChange(index, "length", e.target.value)}
+              className="w-24"
+            />
+            <Input
+              type="number"
+              placeholder="Price"
+              value={lp.price}
+              onChange={(e) => handleLengthPriceChange(index, "price", e.target.value)}
+              className="w-24"
+            />
+            <Input
+              type="number"
+              placeholder="Prev Price"
+              value={lp.previous_price ?? ""}
+              onChange={(e) => handleLengthPriceChange(index, "previous_price", e.target.value)}
+              className="w-24"
+            />
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => removeLengthPrice(index)}
+            >
+              ×
+            </Button>
+          </div>
+        ))}
+        <Button size="sm" variant="outline" onClick={addLengthPrice}>
+          + Add Length Price
+        </Button>
+      </div>
+
       <div className="flex gap-2 mt-3">
         <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
           Cancel
@@ -188,17 +251,14 @@ export default function AdminProductsTable() {
         <span className="text-sm text-gray-500">{products.length} items</span>
       </div>
 
-      {/* Desktop table view */}
-      <div className="hidden lg:block overflow-x-auto">
+      <div className="overflow-x-auto">
         <table className="w-full text-left border">
           <thead className="bg-gray-100">
             <tr>
               <th className="p-3 text-sm font-semibold">Name</th>
               <th className="p-3 text-sm font-semibold">Category</th>
-              <th className="p-3 text-sm font-semibold">Price</th>
-              <th className="p-3 text-sm font-semibold">Was</th>
               <th className="p-3 text-sm font-semibold">Stock</th>
-              <th className="p-3 text-sm font-semibold">Lengths</th>
+              <th className="p-3 text-sm font-semibold">Lengths & Prices</th>
               <th className="p-3 text-sm font-semibold">Actions</th>
             </tr>
           </thead>
@@ -208,29 +268,25 @@ export default function AdminProductsTable() {
                 <tr className="border-t hover:bg-gray-50 transition-colors">
                   <td className="p-3 font-medium">{p.name}</td>
                   <td className="p-3 text-gray-600">{p.category || "-"}</td>
-                  <td className="p-3 font-semibold text-green-600">₵{p.price}</td>
-                  <td className="p-3 text-gray-500 text-sm">
-                    {p.previous_price ? (
-                      <span className="line-through">₵{p.previous_price}</span>
+                  <td className="p-3">{p.stock}</td>
+                  <td className="p-3 text-sm text-gray-700">
+                    {p.length_prices && p.length_prices.length > 0 ? (
+                      <ul className="space-y-1">
+                        {p.length_prices.map((lp, i) => (
+                          <li key={i}>
+                            <span className="font-medium">{lp.length}"</span> — ₵
+                            {lp.price}
+                            {lp.previous_price && (
+                              <span className="text-gray-400 line-through ml-2">
+                                ₵{lp.previous_price}
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
                     ) : (
                       "-"
                     )}
-                  </td>
-                  <td className="p-3">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        p.stock > 10
-                          ? "bg-green-100 text-green-800"
-                          : p.stock > 0
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {p.stock}
-                    </span>
-                  </td>
-                  <td className="p-3 text-sm text-gray-600">
-                    {Array.isArray(p.lengths) ? p.lengths.join(", ") : "-"}
                   </td>
                   <td className="p-3 space-x-2">
                     <Button size="sm" onClick={() => startEdit(p)}>
@@ -245,9 +301,10 @@ export default function AdminProductsTable() {
                     </Button>
                   </td>
                 </tr>
+
                 {editingId === p.id && (
                   <tr>
-                    <td colSpan={7} className="p-0">
+                    <td colSpan={5} className="p-0">
                       <div className="p-4 bg-blue-50 border-t-2 border-blue-200">
                         <EditForm product={p} />
                       </div>
@@ -260,99 +317,8 @@ export default function AdminProductsTable() {
         </table>
       </div>
 
-      {/* Mobile/Tablet card view */}
-      <div className="lg:hidden space-y-4">
-        {products.map((p) => (
-          <div key={p.id} className="border rounded-lg bg-white shadow-sm">
-            <div className="p-4">
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-base mb-1">{p.name}</h3>
-                  {p.category && (
-                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                      {p.category}
-                    </span>
-                  )}
-                </div>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ml-2 ${
-                    p.stock > 10
-                      ? "bg-green-100 text-green-800"
-                      : p.stock > 0
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  Stock: {p.stock}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">Current Price</p>
-                  <p className="font-semibold text-green-600">₵{p.price}</p>
-                </div>
-                {p.previous_price && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Previous Price</p>
-                    <p className="text-gray-500 line-through text-sm">
-                      ₵{p.previous_price}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {p.lengths && Array.isArray(p.lengths) && p.lengths.length > 0 && (
-                <div className="mb-3">
-                  <p className="text-xs text-gray-500 mb-1">Available Lengths</p>
-                  <div className="flex flex-wrap gap-1">
-                    {p.lengths.map((length, idx) => (
-                      <span
-                        key={idx}
-                        className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded"
-                      >
-                        {length}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-2 pt-3 border-t">
-                <Button
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => startEdit(p)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => handleDelete(p.id)}
-                >
-                  Delete
-                </Button>
-              </div>
-            </div>
-
-            {editingId === p.id && (
-              <div className="border-t">
-                <div className="p-4 bg-blue-50">
-                  <EditForm product={p} />
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
       {products.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500 mb-2">No products found</p>
-          <p className="text-sm text-gray-400">Add your first product to get started</p>
-        </div>
+        <div className="text-center py-12 text-gray-500">No products found</div>
       )}
     </div>
   );

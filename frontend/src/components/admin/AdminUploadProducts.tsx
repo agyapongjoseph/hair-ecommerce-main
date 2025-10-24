@@ -24,7 +24,7 @@ export default function AdminUploadProducts() {
 
         // send JSON array to backend
         const res = await fetch(
-          `https://hair-ecommerce-main.onrender.com/admin/upload-products`,
+          `https://hair-ecommerce-main.onrender.com/api/products/upload`,
           {
             method: "POST",
             headers: {
@@ -36,7 +36,7 @@ export default function AdminUploadProducts() {
         );
 
         const result = await res.json();
-
+        console.log("Upload result:", result);
         if (!res.ok) {
           console.error("Upload failed:", result);
           alert("❌ Upload failed: " + (result.error || "Server error"));

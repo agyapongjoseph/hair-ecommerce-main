@@ -50,7 +50,10 @@ function adminAuth(req, res, next) {
 
 // =============== SUPABASE PRODUCT ROUTES ===============
 
+console.log("🧠 uploadProducts file loaded");
+
 // Upload products
+// ✅ Improved Upload Products Endpoint
 app.post("/admin/upload-products", adminAuth, async (req, res) => {
   try {
     const rows = req.body?.products;
@@ -59,73 +62,91 @@ app.post("/admin/upload-products", adminAuth, async (req, res) => {
     }
 
     const results = { inserted: 0, updated: 0, errors: [] };
+
     for (const row of rows) {
       try {
-        const name = (row.name || "").toString().trim();
-        if (!name) throw new Error("Missing product name");
+        const name = (row.name || "").trim();
+        if (!name) continue;
 
-        const description = row.description || "";
-        const price = Number(row.price) || 0;
+        const description = row.description || null;
         const stock = Number(row.stock) || 0;
         const category = row.category || null;
         const image_url = row.image_url || null;
 
-        // Normalise arrays
+        // Normalize arrays
         const lengths = (row.lengths ?? "")
           .toString()
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean);
+
         const colors = (row.colors ?? "")
           .toString()
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean);
 
-        // Check if exists
-        let existing = null;
-        if (image_url) {
-          const { data } = await supabase
-            .from("products")
-            .select("id")
-            .eq("image_url", image_url)
-            .limit(1);
-          if (data?.length) existing = data[0];
-        }
+        const sizes = (row.sizes ?? "")
+          .toString()
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
 
-        if (!existing) {
-          const { data } = await supabase
-            .from("products")
-            .select("id")
-            .ilike("name", name)
-            .limit(1);
-          if (data?.length) existing = data[0];
-        }
+        const textures = row.textures || null;
 
-        if (existing) {
-          await supabase.from("products").update({
-            name, description, price, stock, category, image_url,
-            lengths: lengths.length ? lengths : null,
-            colors: colors.length ? colors : null,
-          }).eq("id", existing.id);
+        // ✅ Case-insensitive name check (trimmed)
+        const { data: existing, error: fetchError } = await supabase
+          .from("products")
+          .select("id, name")
+          .ilike("name", name)
+          .maybeSingle();
+
+        if (fetchError) throw fetchError;
+
+        const productData = {
+          name,
+          description,
+          stock,
+          category,
+          image_url,
+          lengths: lengths.length ? lengths : null,
+          colors: colors.length ? colors : null,
+          sizes: sizes.length ? sizes : null,
+          textures,
+        };
+
+        if (existing?.id) {
+          // ✅ Update existing record
+          const { error: updateError } = await supabase
+            .from("products")
+            .update(productData)
+            .eq("id", existing.id);
+          if (updateError) throw updateError;
           results.updated++;
         } else {
-          await supabase.from("products").insert([{
-            name, description, price, stock, category, image_url,
-            lengths: lengths.length ? lengths : null,
-            colors: colors.length ? colors : null,
-          }]);
+          // ✅ Insert new record
+          const { error: insertError } = await supabase
+            .from("products")
+            .insert([productData]);
+          if (insertError) throw insertError;
           results.inserted++;
         }
       } catch (err) {
-        results.errors.push({ row, error: err.message });
+        console.error("❌ Upload error for product:", row.name, err.message);
+        results.errors.push({ name: row.name, error: err.message });
       }
     }
-    return res.json({ message: "Upload completed", results });
+
+    return res.json({
+      message: "✅ Upload complete",
+      results,
+    });
   } catch (err) {
+    console.error("❌ Server upload error:", err.message);
     return res.status(500).json({ error: err.message });
   }
 });
+
 
 // Public product list
 app.get("/products", async (req, res) => {

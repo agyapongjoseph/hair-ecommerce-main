@@ -26,16 +26,26 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
 
   const addToCart = (item: CartItem) => {
-    setCart((prev) => {
-      const existing = prev.find((p) => p.id === item.id);
-      if (existing) {
-        return prev.map((p) =>
-          p.id === item.id ? { ...p, quantity: p.quantity + item.quantity } : p
-        );
-      }
-      return [...prev, item];
-    });
-  };
+  setCart((prev) => {
+    // Each product+length is unique
+    const existing = prev.find(
+      (p) => p.id === item.id && p.length === item.length
+    );
+
+    if (existing) {
+      // Increment quantity if same length already added
+      return prev.map((p) =>
+        p.id === item.id && p.length === item.length
+          ? { ...p, quantity: p.quantity + item.quantity }
+          : p
+      );
+    }
+
+    // Otherwise, add new length entry
+    return [...prev, item];
+  });
+};
+
 
   const removeFromCart = (id: string) => {
     setCart((prev) => prev.filter((item) => item.id !== id));

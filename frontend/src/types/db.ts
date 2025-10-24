@@ -19,6 +19,11 @@ export type Product = {
   colors?: string[] | null;
   textures?: string | null;
   created_at?: string;
+  length_prices?: {
+    length: string;
+    price: number;
+    previous_price?: number;
+  }[] | null;
 };
 
 
