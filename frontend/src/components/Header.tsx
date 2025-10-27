@@ -163,7 +163,7 @@ const Header = ({ filters, setFilters, isMenuOpen, setIsMenuOpen }: HeaderProps)
                     onChange={(e) => setFilters({ ...filters, color: e.target.value })}
                   >
                     <option value="">Color</option>
-                    <option value="Natural Black">Natural Black</option>
+                    <option value="Black">Black</option>
                     <option value="Brown">Brown</option>
                     <option value="Orange">Orange</option>
                     <option value="Green and Black">Green and Black</option>
@@ -374,7 +374,7 @@ const Header = ({ filters, setFilters, isMenuOpen, setIsMenuOpen }: HeaderProps)
                     onChange={(e) => setFilters({ ...filters, color: e.target.value })}
                   >
                     <option value="">Color</option>
-                    <option value="Natural Black">Natural Black</option>
+                    <option value="Black">Black</option>
                     <option value="Brown">Brown</option>
                     <option value="Orange">Orange</option>
                     <option value="Green and Black">Green and Black</option>
