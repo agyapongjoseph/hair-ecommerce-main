@@ -147,6 +147,14 @@ const Header = ({ filters, setFilters, isMenuOpen, setIsMenuOpen }: HeaderProps)
                     <option value="12">12"</option>
                     <option value="14">14"</option>
                     <option value="16">16"</option>
+                    <option value="18">18"</option>
+                    <option value="20">20"</option>
+                    <option value="22">22"</option>
+                    <option value="24">24"</option>
+                    <option value="26">26"</option>
+                    <option value="28">28"</option>
+                    <option value="30">30"</option>
+                    <option value="32">32"</option>
                   </select>
 
                   <select
@@ -157,7 +165,9 @@ const Header = ({ filters, setFilters, isMenuOpen, setIsMenuOpen }: HeaderProps)
                     <option value="">Color</option>
                     <option value="Natural Black">Natural Black</option>
                     <option value="Brown">Brown</option>
-                    <option value="Blonde">Blonde</option>
+                    <option value="Orange">Orange</option>
+                    <option value="Green and Black">Green and Black</option>
+                    <option value="Wine">Wine</option>
                   </select>
                 </div>
 
@@ -169,7 +179,7 @@ const Header = ({ filters, setFilters, isMenuOpen, setIsMenuOpen }: HeaderProps)
                   <option value="">Texture</option>
                   <option value="Straight">Straight</option>
                   <option value="Curly">Curly</option>
-                  <option value="Wavy">Wavy</option>
+                  <option value="Wave">Wave</option>
                 </select>
 
                 <div className="flex gap-2">
@@ -348,6 +358,14 @@ const Header = ({ filters, setFilters, isMenuOpen, setIsMenuOpen }: HeaderProps)
                     <option value="12">12"</option>
                     <option value="14">14"</option>
                     <option value="16">16"</option>
+                    <option value="18">18"</option>
+                    <option value="20">20"</option>
+                    <option value="22">22"</option>
+                    <option value="24">24"</option>
+                    <option value="26">26"</option>
+                    <option value="28">28"</option>
+                    <option value="30">30"</option>
+                    <option value="32">32"</option>
                   </select>
 
                   <select
@@ -358,7 +376,9 @@ const Header = ({ filters, setFilters, isMenuOpen, setIsMenuOpen }: HeaderProps)
                     <option value="">Color</option>
                     <option value="Natural Black">Natural Black</option>
                     <option value="Brown">Brown</option>
-                    <option value="Blonde">Blonde</option>
+                    <option value="Orange">Orange</option>
+                    <option value="Green and Black">Green and Black</option>
+                    <option value="Wine">Wine</option>
                   </select>
                 </div>
 
@@ -370,7 +390,7 @@ const Header = ({ filters, setFilters, isMenuOpen, setIsMenuOpen }: HeaderProps)
                   <option value="">Texture</option>
                   <option value="Straight">Straight</option>
                   <option value="Curly">Curly</option>
-                  <option value="Wavy">Wavy</option>
+                  <option value="Wave">Wave</option>
                 </select>
 
                 <div className="flex gap-2">
