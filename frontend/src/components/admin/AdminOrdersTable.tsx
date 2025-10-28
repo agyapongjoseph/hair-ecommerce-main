@@ -289,11 +289,11 @@ export default function AdminOrdersTable() {
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Delivery Option</p>
                   <p className="text-sm text-gray-700">
-                    {o.delivery_method
-                      ? o.delivery_method === "pickup"
-                        ? "Pickup at store"
-                        : "Delivery to address"
-                      : "—"}
+                    {o.delivery_method === "pickup"
+                      ? "Pickup at store"
+                      : o.customer_address
+                      ? o.customer_address
+                      : "Delivery"}
                   </p>
                 </div>
                 <div className="mb-3">
