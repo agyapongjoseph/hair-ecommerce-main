@@ -155,12 +155,10 @@ export default function AdminOrdersTable() {
                         {isGuest ? "Guest" : "Registered"}
                       </span>
                     </td>
-                    <td className="p-3 text-sm">
-                      {o.delivery_method
-                        ? o.delivery_method === "pickup"
-                          ? "Pickup at store"
-                          : "Delivery to address"
-                        : "—"}
+                    <td>
+                      {o.delivery_method === "pickup"
+                        ? "Pickup at store"
+                        : o.customer_address || "Delivery"}
                     </td>
                     <td className="p-3 font-semibold text-green-600">₵{o.total}</td>
                     <td className="p-3">
