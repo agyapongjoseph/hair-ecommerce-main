@@ -111,7 +111,7 @@ export const OrdersProvider: React.FC<{ children: React.ReactNode }> = ({
 
     try {
       const nOrder = await fetch(
-        "https://hair-ecommerce-main.onrender.com/api/orders/place-order",
+        "https://hair-ecommerce-backend.onrender.com/api/orders/place-order",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

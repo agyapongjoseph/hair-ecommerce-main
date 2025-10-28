@@ -32,7 +32,7 @@ export default function AdminProductsTable() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`https://hair-ecommerce-main.onrender.com/api/products/all`, {
+      const res = await fetch(`https://hair-ecommerce-backend.onrender.com/api/products/all`, {
         headers: { "x-admin-key": import.meta.env.VITE_ADMIN_KEY },
       });
       if (!res.ok) throw new Error("Failed to fetch admin products");

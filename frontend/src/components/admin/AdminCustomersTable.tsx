@@ -16,13 +16,13 @@ export default function AdminCustomersTable() {
   const fetchCustomers = async () => {
     try {
       // Fetch registered customers
-      const registeredRes = await fetch(`https://hair-ecommerce-main.onrender.com/api/customers/all`, {
+      const registeredRes = await fetch(`https://hair-ecommerce-backend.onrender.com/api/customers/all`, {
         headers: { "x-admin-key": import.meta.env.VITE_ADMIN_KEY },
       });
       const registered = await registeredRes.json();
       console.log(`Registered customers:`, registered); // Debug log
       // Fetch guest customers (unique emails from orders)
-      const guestRes = await fetch(`https://hair-ecommerce-main.onrender.com/api/orders/all`, {
+      const guestRes = await fetch(`https://hair-ecommerce-backend.onrender.com/api/orders/all`, {
         headers: { "x-admin-key": import.meta.env.VITE_ADMIN_KEY },
       });
       const guestOrders = await guestRes.json();

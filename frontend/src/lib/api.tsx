@@ -5,7 +5,7 @@ export async function apiFetch(
 ): Promise<any> {
   // Always include /api/ in every call
   const base =
-    import.meta.env.VITE_BACKEND_URL || "https://hair-ecommerce-main.onrender.com";
+    import.meta.env.VITE_BACKEND_URL || "https://hair-ecommerce-backend.onrender.com";
 
   // Ensure path starts correctly
   const fullPath = path.startsWith("/api/") ? path : `/api${path}`;

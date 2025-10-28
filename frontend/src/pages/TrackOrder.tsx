@@ -33,7 +33,7 @@ const TrackOrder: React.FC = () => {
   const nav = useNavigate();
 
   const API_BASE =
-    import.meta.env.VITE_BACKEND_URL || "https://hair-ecommerce-main.onrender.com";
+    import.meta.env.VITE_BACKEND_URL || "https://hair-ecommerce-backend.onrender.com";
 
   const formatCurrency = (v = 0) =>
     new Intl.NumberFormat("en-GH", {

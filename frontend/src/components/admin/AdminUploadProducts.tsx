@@ -24,7 +24,7 @@ export default function AdminUploadProducts() {
 
         // send JSON array to backend
         const res = await fetch(
-          `https://hair-ecommerce-main.onrender.com/api/products/upload`,
+          `https://hair-ecommerce-backend.onrender.com/api/products/upload`,
           {
             method: "POST",
             headers: {
