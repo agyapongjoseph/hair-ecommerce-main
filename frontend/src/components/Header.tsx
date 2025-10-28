@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Menu, X, ShoppingBag, Search, User, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,30 @@ type HeaderProps = {
 const Header = ({ filters, setFilters, isMenuOpen, setIsMenuOpen }: HeaderProps) => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const searchRef = useRef<HTMLDivElement>(null);
+
+// Close search when clicking outside
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      searchRef.current &&
+      !searchRef.current.contains(event.target as Node)
+    ) {
+      setShowSearch(false);
+    }
+  };
+
+  if (showSearch) {
+    document.addEventListener("mousedown", handleClickOutside);
+  } else {
+    document.removeEventListener("mousedown", handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [showSearch]);
+
   const {cart, cartCount, removeFromCart} = useCart();
   const navigate = useNavigate();
 
@@ -114,7 +138,10 @@ const Header = ({ filters, setFilters, isMenuOpen, setIsMenuOpen }: HeaderProps)
 
             {/* Search Dropdown */}
             {showSearch && (
-              <div className="absolute top-12 right-0 w-80 xl:w-96 bg-card border border-border rounded-lg shadow-lg p-4 space-y-3 animate-fade-in-up z-50">
+              <div
+                ref={searchRef}
+                className="absolute top-12 right-0 w-80 xl:w-96 bg-card border border-border rounded-lg shadow-lg p-4 space-y-3 animate-fade-in-up z-50"
+              >
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-semibold text-sm">Search & Filter</h3>
                   <Button
