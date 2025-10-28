@@ -40,7 +40,7 @@ ordersRouter.post("/", async (req, res) => {
       customer_phone,
       customer_address,
       client_reference: clientReference,
-      delivery_method: delivery_method || "delivery",
+      delivery_method: req.body.delivery_method === "pickup" ? "pickup" : "delivery",
       status: "pending",
     };
 
