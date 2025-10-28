@@ -23,7 +23,7 @@ const Footer = () => {
     { icon: MessageCircle, href: 'https://wa.me/15551234567', label: 'WhatsApp' },
     { icon: Instagram, href: 'https://instagram.com/faridaabdulhair', label: 'Instagram' },
     { icon: Phone, href: 'tel:+15551234567', label: 'Phone' },
-    { icon: Mail, href: 'mailto:hello@faridaabdulhair.com', label: 'Email' },
+    { icon: Mail, href: 'mailto:faridaabdulhair@gmail.com', label: 'Email' },
   ];
 
   return (
@@ -126,7 +126,7 @@ const Footer = () => {
                   Email
                 </p>
                 <a 
-                  href="mailto:hello@faridaabdulhair.com"
+                  href="mailto:faridaabdulhair@gmail.com"
                   className="text-primary hover-gold font-medium text-sm"
                 >
                   hello@faridaabdulhair.com
