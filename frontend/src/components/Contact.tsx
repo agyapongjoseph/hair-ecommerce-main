@@ -18,7 +18,7 @@ const Contact = () => {
       title: 'Phone Call',
       description: 'Speak with our team',
       value: '+233 500 017587',
-      action: () => window.open('tel:+233500017587'),
+      action: () => window.location.href = 'tel:+233500017587',
       primary: false,
     },
     {
@@ -48,7 +48,7 @@ const Contact = () => {
     {
       icon: MapPin,
       title: 'Service Areas',
-      details: ['Worldwide Shipping', 'Express Delivery Available', 'Local Pickup Options'],
+      details: ['Worldwide Shipping', 'Express Delivery Available', 'Local Pickup Options', 'Center Point Mall'],
     },
   ];
 

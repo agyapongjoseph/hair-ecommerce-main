@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 // ✅ Testimonial data (Array, not function)
 const testimonials = [
@@ -14,7 +13,7 @@ const testimonials = [
     id: 2,
     name: "Nana Adjei",
     feedback:
-      "Excellent service and very professional. I’ve received so many compliments on my new look!",
+      "Excellent service and very professional. I've received so many compliments on my new look!",
   },
   {
     id: 3,
@@ -32,18 +31,20 @@ const testimonials = [
     id: 5,
     name: "Linda Owusu",
     feedback:
-      "Affordable prices and excellent quality. I’ll definitely be buying again!",
+      "Affordable prices and excellent quality. I'll definitely be buying again!",
   },
 ];
 
 const Testimonial = () => {
-  const [visibleCount, setVisibleCount] = useState(3);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const handleViewMore = () => {
-    setVisibleCount((prev) =>
-      prev + 3 >= testimonials.length ? testimonials.length : prev + 3
-    );
-  };
+  // Auto-scroll effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <section
@@ -68,76 +69,76 @@ const Testimonial = () => {
           </p>
         </div>
 
-        {/* Cards */}
-        <div className="grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-8 justify-items-center mb-12">
-          {testimonials.slice(0, visibleCount).map((t, index) => (
-            <Card
-              key={t.id}
-              className="max-w-sm w-full bg-black border border-yellow-600 shadow-lg hover:shadow-yellow-600/30 transition-all duration-300 rounded-3xl hover:-translate-y-2 group"
+        {/* Carousel Container */}
+        <div className="relative max-w-6xl mx-auto mb-8">
+          <div className="overflow-hidden">
+            <div
+              className="flex transition-transform duration-700 ease-in-out"
               style={{
-                animationDelay: `${index * 100}ms`,
-                animation: "fadeInUp 0.6s ease-out forwards",
+                transform: `translateX(-${currentIndex * 100}%)`,
               }}
             >
-              <CardContent className="p-8 relative">
-                {/* Decorative quote */}
-                <div className="absolute top-4 left-4 text-6xl text-yellow-900 font-Poppins leading-none opacity-20">
-                  "
-                </div>
+              {testimonials.map((t, index) => (
+                <div
+                  key={t.id}
+                  className="w-full flex-shrink-0 px-4"
+                >
+                  <Card className="max-w-2xl mx-auto bg-black border border-yellow-600 shadow-lg hover:shadow-yellow-600/30 transition-all duration-300 rounded-3xl">
+                    <CardContent className="p-8 md:p-12 relative">
+                      {/* Decorative quote */}
+                      <div className="absolute top-4 left-4 text-6xl md:text-8xl text-yellow-900 font-Poppins leading-none opacity-20">
+                        "
+                      </div>
 
-                {/* Stars */}
-                <div className="flex justify-center gap-1 mb-4 relative z-10">
-                  {[...Array(5)].map((_, i) => (
-                    <svg
-                      key={i}
-                      className="w-5 h-5 fill-yellow-400"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                    </svg>
-                  ))}
-                </div>
+                      {/* Stars */}
+                      <div className="flex justify-center gap-1 mb-6 relative z-10">
+                        {[...Array(5)].map((_, i) => (
+                          <svg
+                            key={i}
+                            className="w-6 h-6 fill-yellow-400"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                          </svg>
+                        ))}
+                      </div>
 
-                <p className="text-gray-200 mb-6 text-base leading-relaxed relative z-10">
-                  {t.feedback}
-                </p>
+                      <p className="text-gray-200 mb-8 text-lg md:text-xl leading-relaxed relative z-10">
+                        {t.feedback}
+                      </p>
 
-                <div className="flex items-center justify-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center text-black font-bold text-lg">
-                    {t.name.charAt(0)}
-                  </div>
-                  <h4 className="font-semibold text-yellow-400 text-lg">
-                    {t.name}
-                  </h4>
+                      <div className="flex items-center justify-center gap-4">
+                        <div className="w-14 h-14 rounded-full bg-yellow-500 flex items-center justify-center text-black font-bold text-xl">
+                          {t.name.charAt(0)}
+                        </div>
+                        <h4 className="font-semibold text-yellow-400 text-xl">
+                          {t.name}
+                        </h4>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              ))}
+            </div>
+          </div>
+
+          {/* Navigation Dots */}
+          <div className="flex justify-center gap-2 mt-8">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === currentIndex
+                    ? "bg-yellow-400 w-8"
+                    : "bg-yellow-600/30 hover:bg-yellow-600/50"
+                }`}
+                aria-label={`Go to testimonial ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
-
-        {/* View More Button */}
-        {visibleCount < testimonials.length && (
-          <Button
-            onClick={handleViewMore}
-            className="px-8 py-6 text-black bg-yellow-400 hover:bg-yellow-500 transition-all duration-300 rounded-full shadow-lg hover:shadow-yellow-500/50 text-base font-semibold"
-          >
-            View More Testimonials
-          </Button>
-        )}
       </div>
-
-      <style>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </section>
   );
 };

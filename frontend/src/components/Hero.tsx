@@ -46,32 +46,22 @@ const Hero = () => {
           </p>
 
           {/* Features */}
-          <div className="flex flex-wrap justify-center gap-4 mb-10">
-            {["Virgin Hair", "No Shedding", "Long Lasting"].map((feature, index) => (
-              <div
-                key={feature}
-                className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-2 text-white font-elegant animate-scale-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                {feature}
-              </div>
-            ))}
+          <div className="flex justify-center mb-10">
+            <ul className="list-disc text-white flex gap-8">
+              {["No Shedding", "Long Lasting"].map((feature, index) => (
+                <li
+                  key={feature}
+                  className="font-elegant animate-scale-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  {feature}
+                </li>
+              ))}
+            </ul>
           </div>
-
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            {/* Shop Now → Checkout */}
-           <Button
-              size="lg"
-              className="bg-black text-[#FFD700] font-elegant font-bold px-8 py-6 text-lg rounded-2xl 
-              border-2 border-black hover:border-[#FFD700] hover:shadow-[0_0_15px_#FFD700] 
-              transition-all duration-300 group"
-              onClick={() => navigate('/checkout')}
-            >
-              Shop Now
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            {/* View Catalog → Scroll to Products */}
+            {/* Shop Now → Scroll to Products */}
             <Button
               variant="outline"
               size="lg"
@@ -81,7 +71,7 @@ const Hero = () => {
                 if (el) el.scrollIntoView({ behavior: "smooth" });
               }}
             >
-              View Catalog
+              Shop Now
             </Button>
           </div>
 
