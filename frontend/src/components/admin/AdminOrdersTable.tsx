@@ -21,6 +21,7 @@ type Order = {
   customer_phone?: string;
   customer_address?: string;
   client_reference?: string;
+  delivery_method?: string;
 };
 
 const STATUS_OPTIONS = ["pending", "paid", "shipped", "completed", "cancelled"];
@@ -120,6 +121,7 @@ export default function AdminOrdersTable() {
               <th className="p-3 text-sm font-semibold">Order ID</th>
               <th className="p-3 text-sm font-semibold">Customer</th>
               <th className="p-3 text-sm font-semibold">Email</th>
+              <th className="p-3 text-sm font-semibold">Delivery</th>
               <th className="p-3 text-sm font-semibold">Type</th>
               <th className="p-3 text-sm font-semibold">Total</th>
               <th className="p-3 text-sm font-semibold">Status</th>
@@ -152,6 +154,13 @@ export default function AdminOrdersTable() {
                       >
                         {isGuest ? "Guest" : "Registered"}
                       </span>
+                    </td>
+                    <td className="p-3 text-sm">
+                      {o.delivery_method
+                        ? o.delivery_method === "pickup"
+                          ? "Pickup at store"
+                          : "Delivery to address"
+                        : "—"}
                     </td>
                     <td className="p-3 font-semibold text-green-600">₵{o.total}</td>
                     <td className="p-3">
@@ -279,7 +288,16 @@ export default function AdminOrdersTable() {
                     </p>
                   </div>
                 </div>
-
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Delivery Option</p>
+                  <p className="text-sm text-gray-700">
+                    {o.delivery_method
+                      ? o.delivery_method === "pickup"
+                        ? "Pickup at store"
+                        : "Delivery to address"
+                      : "—"}
+                  </p>
+                </div>
                 <div className="mb-3">
                   <p className="text-xs text-gray-500 mb-2">Status</p>
                   <select

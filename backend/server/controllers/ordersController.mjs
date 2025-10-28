@@ -12,17 +12,32 @@ export const getAllOrders = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("orders")
-      .select("*")
+      .select(`
+        id,
+        user_id,
+        status,
+        total,
+        created_at,
+        items,
+        customer_name,
+        customer_email,
+        customer_phone,
+        customer_address,
+        client_reference,
+        delivery_method
+      `)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-    res.json(data);
+
     console.log("Fetched all orders:", data); // Debug log
+    res.json(data);
   } catch (err) {
     console.error("🔥 Error fetching all orders:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 export const updateOrderStatus = async (req, res) => {
@@ -82,6 +97,7 @@ export const placeOrder = async (req, res) => {
       customer_phone,
       customer_address,
       client_reference,
+      delivery_method,
     } = req.body;
 
     // ✅ Validate required fields
@@ -103,6 +119,7 @@ export const placeOrder = async (req, res) => {
       customer_phone,
       customer_address,
       client_reference: clientReference,
+      delivery_method: delivery_method || "delivery",
       status: "pending",
     };
 

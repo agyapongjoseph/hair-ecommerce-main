@@ -20,6 +20,7 @@ const Checkout: React.FC = () => {
     email: "",
     phone: "",
     address: "",
+    deliveryMethod: "delivery",
   });
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -63,6 +64,7 @@ const Checkout: React.FC = () => {
               address: formData.address,
             },
             user_id: user?.id,
+            delivery_method: formData.deliveryMethod,
           }),
         }
       );
@@ -135,15 +137,47 @@ const Checkout: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               required
             />
-            <Input
-              type="text"
-              placeholder="Delivery Address"
-              value={formData.address}
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
-              required
-            />
+            <div className="space-y-2">
+                <h2 className="text-lg font-semibold">Delivery Option</h2>
+                <div className="flex flex-col space-y-2">
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="deliveryMethod"
+                      value="delivery"
+                      checked={formData.deliveryMethod === "delivery"}
+                      onChange={(e) =>
+                        setFormData({ ...formData, deliveryMethod: e.target.value })
+                      }
+                    />
+                    <span>Delivery</span>
+                  </label>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="deliveryMethod"
+                      value="pickup"
+                      checked={formData.deliveryMethod === "pickup"}
+                      onChange={(e) =>
+                        setFormData({ ...formData, deliveryMethod: e.target.value })
+                      }
+                    />
+                    <span>Pickup</span>
+                  </label>
+                </div>
+              </div>
+
+              {formData.deliveryMethod === "delivery" && (
+              <Input
+                type="text"
+                placeholder="Delivery Address"
+                value={formData.address}
+                onChange={(e) =>
+                  setFormData({ ...formData, address: e.target.value })
+                }
+                required
+              />
+            )}
           </div>
 
           {/* Order Summary */}

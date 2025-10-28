@@ -10,6 +10,7 @@ export default function checkoutRoutes(supabase) {
   router.post("/", async (req, res) => {
     try {
       const { customer, items, total } = req.body;
+      const delivery_method = req.body.delivery_method || "delivery";
       if (!customer || !items || !Array.isArray(items) || !total) {
         return res.status(400).json({ error: "Invalid checkout data" });
       }
@@ -30,6 +31,7 @@ export default function checkoutRoutes(supabase) {
             customer_email: customer.email,
             customer_phone: customer.phone,
             customer_address: customer.address,
+            delivery_method: delivery_method || "delivery",
           },
         ])
         .select()

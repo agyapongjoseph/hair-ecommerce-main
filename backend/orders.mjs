@@ -18,6 +18,7 @@ ordersRouter.post("/", async (req, res) => {
       customer_phone,
       customer_address,
       client_reference,
+      delivery_method,
     } = req.body;
 
     // ✅ Validate required fields
@@ -39,6 +40,7 @@ ordersRouter.post("/", async (req, res) => {
       customer_phone,
       customer_address,
       client_reference: clientReference,
+      delivery_method: delivery_method || "delivery",
       status: "pending",
     };
 
