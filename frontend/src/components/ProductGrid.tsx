@@ -155,24 +155,25 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
               {/* Product Image */}
               <div className="relative overflow-hidden bg-gray-50">
                   <div className="aspect-[4/5] w-full overflow-hidden relative">
-                      {/* Default Image */}
+                    {/* Default Image */}
+                    <img
+                      src={product.image_url || "/placeholder.png"}
+                      alt={product.name}
+                      className="w-full h-full object-cover absolute inset-0 transition-opacity duration-500 group-hover:opacity-0"
+                      onError={(e) => (e.currentTarget.src = "/placeholder.png")}
+                    />
+
+                    {/* Hover Image (show second if available, else default) */}
+                    {product.image_urls?.[1] ? (
                       <img
-                        src={product.image_url || "/placeholder.png"}
-                        alt={product.name}
-                        className="w-full h-full object-cover absolute inset-0 transition-opacity duration-500 group-hover:opacity-0"
+                        src={product.image_urls[1]}
+                        alt={`${product.name} alternate view`}
+                        className="w-full h-full object-cover absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                        style={{ transition: "transform 0.5s ease, opacity 0.5s ease" }}
+                        onError={(e) => (e.currentTarget.style.display = "none")}
                       />
-
-                      {/* Hover Image (show second image if available) */}
-                      {product.image_urls && product.image_urls.length > 1 ? (
-                        <img
-                          src={product.image_urls[1]}
-                          alt={`${product.name} alternate view`}
-                          className="w-full h-full object-cover absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                          style={{ transition: "transform 0.5s ease, opacity 0.5s ease" }}
-                        />
-                      ) : null}
-                    </div>
-
+                    ) : null}
+                  </div>
                 {/* Stock Overlay */}
                 {product.stock <= 0 && (
                   <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
