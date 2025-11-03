@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "@/context/AuthContext";
 import {
   Package,
@@ -58,6 +60,16 @@ const TrackOrder: React.FC = () => {
       };
 
       setOrder(normalized);
+
+      if (
+      normalized.status === "paid" &&
+      window?.performance?.navigation?.type !== 1 // avoid showing again on reload
+    ) {
+      toast.success("🎉 Payment successful! Your order has been confirmed.", {
+        position: "top-center",
+        autoClose: 4000,
+      });
+    }
     } catch (err: any) {
       console.error("Error tracking order:", err);
       setError(err.message || "Failed to fetch order");
@@ -419,6 +431,7 @@ const TrackOrder: React.FC = () => {
           </div>
         )}
       </div>
+      <ToastContainer />
     </div>
   );
 };

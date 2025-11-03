@@ -6,7 +6,7 @@ import fetch from "node-fetch";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
-// import { sendEmail } from "./utils/sendEmail.js";
+import { sendEmail } from "./utils/sendEmail.js";
 import allRoutes from "./server/allRoutes.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -275,6 +275,33 @@ app.post("/hubtel/callback", async (req, res) => {
             )
             .join("");
 
+          // 🧩 1️⃣ Reduce stock in Supabase
+          for (const item of order.items) {
+            const { data: product, error: fetchErr } = await supabase
+              .from("products")
+              .select("id, stock")
+              .eq("id", item.id)
+              .single();
+
+            if (!fetchErr && product) {
+              const newStock = Math.max((product.stock || 0) - item.quantity, 0);
+              const { error: updateErr } = await supabase
+                .from("products")
+                .update({ stock: newStock })
+                .eq("id", item.id);
+              if (updateErr) console.error("⚠️ Stock update failed:", updateErr);
+            } else {
+              console.error("⚠️ Product not found or fetch error:", fetchErr);
+            }
+          }
+
+          // 🧩 2️⃣ Update order to paid
+          await supabase
+            .from("orders")
+            .update({ status: "PAID" })
+            .eq("clientReference", clientReference);
+
+          // 🧩 3️⃣ Send confirmation email
           const html = `
             <h2>Payment Successful 🎉</h2>
             <p>Dear ${order.customer_name},</p>
@@ -282,18 +309,16 @@ app.post("/hubtel/callback", async (req, res) => {
             <p><strong>Total Paid:</strong> ₵${Number(order.total).toFixed(2)}</p>
             <h3>Items:</h3>
             <ul>${productList}</ul>
-            <p>You can check the delivery progress anytime here:</p>
-            <a href="${process.env.FRONTEND_URL}/track-order?ref=${clientReference}">
-              Track My Order
-            </a>
-            <br><br>
             <p>Thank you for shopping with Farida Abdul Hair!</p>
           `;
 
           if (order.customer_email) {
             sendEmail(order.customer_email, "Payment Confirmed", html);
           }
+
+          console.log("✅ Payment successful — stock updated.");
         }
+
       }
     }
 
