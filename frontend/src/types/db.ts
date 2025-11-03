@@ -15,6 +15,7 @@ export type Product = {
   stock: number;
   category?: string;
   image_url?: string;
+  image_urls?: string[] | null;
   lengths?: string[] | null;
   colors?: string[] | null;
   textures?: string | null;
