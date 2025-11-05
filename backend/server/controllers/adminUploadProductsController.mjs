@@ -1,3 +1,4 @@
+// backend/server/controllers/adminUploadProductsController.mjs
 import { createClient } from "@supabase/supabase-js";
 import "dotenv/config";
 
@@ -52,16 +53,32 @@ export const uploadProducts = async (req, res) => {
         description,
         category,
         image_url,
-        image_urls, // ✅ capture from Excel
         stock,
         colors,
         sizes,
+        image_urls, // might exist as comma-separated
         texture,
         ...rest
       } = p;
 
       if (!name) continue;
 
+      // ✅ Support multiple image columns (image_1, image_2, image_3, image_4, etc.)
+      const imageColumns = [
+        p.image_1,
+        p.image_2,
+        p.image_3,
+        p.image_4,
+        p.image_5,
+      ].filter(Boolean);
+
+      // Combine both image columns and parsed image_urls (if present)
+      const allImageUrls =
+        imageColumns.length > 0
+          ? imageColumns
+          : parseArray(image_urls);
+
+      // Build length & price data
       const length_prices = Object.entries(rest)
         .filter(([key]) => key.startsWith("length_") && rest[key] !== "")
         .map(([key, value]) => {
@@ -76,7 +93,7 @@ export const uploadProducts = async (req, res) => {
 
       const lengths = length_prices.map((lp) => lp.length);
 
-      // 🔍 Check existing product
+      // 🔍 Check if product already exists
       const { data: existing, error: fetchError } = await supabase
         .from("products")
         .select("id, name")
@@ -85,7 +102,7 @@ export const uploadProducts = async (req, res) => {
 
       if (fetchError) throw fetchError;
 
-      // ✅ Build final product data (with image_urls array)
+      // ✅ Build final product data
       const productData = {
         name: name.trim(),
         description: description || null,
@@ -97,7 +114,7 @@ export const uploadProducts = async (req, res) => {
         textures: texture || null,
         lengths,
         length_prices,
-        image_urls: parseArray(image_urls), // ✅ key fix
+        image_urls: allImageUrls, // ✅ now includes multiple image columns
       };
 
       if (existing) {

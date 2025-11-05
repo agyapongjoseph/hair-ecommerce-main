@@ -29,6 +29,9 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
   const [loading, setLoading] = useState(true);
   const [selectedLengths, setSelectedLengths] = useState<Record<string, string>>({});
   const [visibleCount, setVisibleCount] = useState(15); // 5 per row × 3 rows
+  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState<Record<string, number>>({});
+
 
   useEffect(() => {
     async function load() {
@@ -43,6 +46,24 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
     }
     load();
   }, []);
+
+  useEffect(() => {
+  let interval: NodeJS.Timeout;
+
+  if (hoveredProduct) {
+    const product = products.find((p) => p.id === hoveredProduct);
+    if (product?.image_urls?.length > 1) {
+      interval = setInterval(() => {
+        setCurrentImageIndex((prev) => ({
+          ...prev,
+          [hoveredProduct]: ((prev[hoveredProduct] || 0) + 1) % product.image_urls.length,
+        }));
+      }, 700); // change image every 1.5 seconds
+    }
+  }
+
+  return () => clearInterval(interval);
+}, [hoveredProduct, products]);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-GH", {
@@ -153,62 +174,58 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               {/* Product Image */}
-              <div className="relative overflow-hidden bg-gray-50">
+                <div
+                  className="relative overflow-hidden bg-gray-50"
+                  onMouseEnter={() => setHoveredProduct(product.id)}
+                  onMouseLeave={() => setHoveredProduct(null)}
+                >
                   <div className="aspect-[4/5] w-full overflow-hidden relative">
-                    {/* Default Image */}
                     <img
-                      src={product.image_url || "/placeholder.png"}
+                      src={
+                        hoveredProduct === product.id && product.image_urls?.length
+                          ? product.image_urls[currentImageIndex[product.id]] || product.image_url
+                          : product.image_url || "/placeholder.png"
+                      }
                       alt={product.name}
-                      className="w-full h-full object-cover absolute inset-0 transition-opacity duration-500 group-hover:opacity-0"
+                      className="w-full h-full object-cover absolute inset-0 transition-opacity duration-500"
                       onError={(e) => (e.currentTarget.src = "/placeholder.png")}
                     />
-
-                    {/* Hover Image (show second if available, else default) */}
-                    {product.image_urls?.[1] ? (
-                      <img
-                        src={product.image_urls[1]}
-                        alt={`${product.name} alternate view`}
-                        className="w-full h-full object-cover absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                        style={{ transition: "transform 0.5s ease, opacity 0.5s ease" }}
-                        onError={(e) => (e.currentTarget.style.display = "none")}
-                      />
-                    ) : null}
                   </div>
-                {/* Stock Overlay */}
-                {product.stock <= 0 && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                    <Badge variant="secondary" className="text-xs font-bold px-3 py-1.5">
-                      Out of Stock
-                    </Badge>
-                  </div>
-                )}
 
-                {/* Discount Badge */}
-                {product.previous_price && product.previous_price > product.price && (
-                  <div className="absolute top-2 left-2 z-10">
-                    <div className="bg-gradient-to-r from-red-600 to-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md">
-                      SAVE {Math.round(((product.previous_price - product.price) / product.previous_price) * 100)}%
+                  {/* Stock Overlay */}
+                  {product.stock <= 0 && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                      <Badge variant="secondary" className="text-xs font-bold px-3 py-1.5">
+                        Out of Stock
+                      </Badge>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Favorite */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 bg-white/95 hover:bg-white h-7 w-7 rounded-full shadow-sm"
-                  onClick={() => toggleFavorite(product.id)}
-                >
-                  <Heart
-                    className={`h-3.5 w-3.5 transition-all ${
-                      favorites.includes(product.id)
-                        ? "text-red-500 fill-red-500 scale-110"
-                        : "text-gray-600"
-                    }`}
-                  />
-                </Button>
-              </div>
+                  {/* Discount Badge */}
+                  {product.previous_price && product.previous_price > product.price && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <div className="bg-gradient-to-r from-red-600 to-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md">
+                        SAVE {Math.round(((product.previous_price - product.price) / product.previous_price) * 100)}%
+                      </div>
+                    </div>
+                  )}
 
+                  {/* Favorite */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 bg-white/95 hover:bg-white h-7 w-7 rounded-full shadow-sm"
+                    onClick={() => toggleFavorite(product.id)}
+                  >
+                    <Heart
+                      className={`h-3.5 w-3.5 transition-all ${
+                        favorites.includes(product.id)
+                          ? "text-red-500 fill-red-500 scale-110"
+                          : "text-gray-600"
+                      }`}
+                    />
+                  </Button>
+                </div>
               {/* Card Content */}
               <CardContent className="p-3">
                 <h3 className="font-elegant font-bold text-sm mb-1 text-card-foreground line-clamp-2 min-h-[2.3rem]">
