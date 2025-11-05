@@ -29,7 +29,6 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
   const [loading, setLoading] = useState(true);
   const [selectedLengths, setSelectedLengths] = useState<Record<string, string>>({});
   const [visibleCount, setVisibleCount] = useState(15); // 5 per row × 3 rows
-  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState<Record<string, number>>({});
 
 
@@ -48,22 +47,24 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
   }, []);
 
   useEffect(() => {
-  let interval: NodeJS.Timeout;
+  const interval = setInterval(() => {
+    setCurrentImageIndex((prev) => {
+      const newState = { ...prev };
 
-  if (hoveredProduct) {
-    const product = products.find((p) => p.id === hoveredProduct);
-    if (product?.image_urls?.length > 1) {
-      interval = setInterval(() => {
-        setCurrentImageIndex((prev) => ({
-          ...prev,
-          [hoveredProduct]: ((prev[hoveredProduct] || 0) + 1) % product.image_urls.length,
-        }));
-      }, 700); // change image every 1.5 seconds
-    }
-  }
+      products.forEach((product) => {
+        if (product.image_urls && product.image_urls.length > 1) {
+          const current = prev[product.id] || 0;
+          newState[product.id] = (current + 1) % product.image_urls.length;
+        }
+      });
+
+      return newState;
+    });
+  }, 3000); // change every 3 seconds
 
   return () => clearInterval(interval);
-}, [hoveredProduct, products]);
+}, [products]);
+
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-GH", {
@@ -176,20 +177,18 @@ const ProductGrid = ({ filters }: ProductGridProps) => {
               {/* Product Image */}
                 <div
                   className="relative overflow-hidden bg-gray-50"
-                  onMouseEnter={() => setHoveredProduct(product.id)}
-                  onMouseLeave={() => setHoveredProduct(null)}
                 >
                   <div className="aspect-[4/5] w-full overflow-hidden relative">
                     <img
-                      src={
-                        hoveredProduct === product.id && product.image_urls?.length
-                          ? product.image_urls[currentImageIndex[product.id]] || product.image_url
-                          : product.image_url || "/placeholder.png"
-                      }
-                      alt={product.name}
-                      className="w-full h-full object-cover absolute inset-0 transition-opacity duration-500"
-                      onError={(e) => (e.currentTarget.src = "/placeholder.png")}
-                    />
+                        src={
+                          product.image_urls?.length
+                            ? product.image_urls[currentImageIndex[product.id]] || product.image_url
+                            : product.image_url || "/placeholder.png"
+                        }
+                        alt={product.name}
+                        className="w-full h-full object-cover absolute inset-0 transition-opacity duration-700 ease-in-out"
+                        onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+                      />
                   </div>
 
                   {/* Stock Overlay */}
