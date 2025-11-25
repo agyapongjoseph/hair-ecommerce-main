@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Star, ArrowRight } from "lucide-react";
-import heroVideo from "@/assets/hero-bg.mp4";
+import heroimage from "@/assets/hero-image.jpg";
 import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
@@ -13,12 +13,9 @@ const Hero = () => {
     >
       {/* Background */}
       <div className="absolute inset-0 z-0">
-        <video
-          src={heroVideo}
-          autoPlay
-          muted
-          loop
-          playsInline
+        <img
+          src={heroimage}
+          alt="Hero"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 gradient-black opacity-80"></div>
