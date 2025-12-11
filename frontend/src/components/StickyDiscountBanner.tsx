@@ -9,15 +9,16 @@ const StickyDiscountBanner = ({ isMenuOpen }: StickyDiscountBannerProps) => {
   if (isMenuOpen) return null;
 
   const bannerText = [
-    "Clearance Sales Ongoing — Get Up To 40%–50% OFF",
+    "Christmas Sales Ongoing — Get Up To 40%–50% OFF",
 
-    "Worldwide Shipping",
-
-    "Express Delivery Available",
+    "Center Point Mall",
 
     "Local Pickup Options",
 
-    "Center Point Mall"
+    "Worldwide Shipping",
+
+    "Express Delivery Available"
+
   ];
 
   return (
