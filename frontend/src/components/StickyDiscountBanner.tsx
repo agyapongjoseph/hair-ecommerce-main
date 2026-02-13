@@ -9,7 +9,6 @@ const StickyDiscountBanner = ({ isMenuOpen }: StickyDiscountBannerProps) => {
   if (isMenuOpen) return null;
 
   const bannerText = [
-    "Christmas Sales Ongoing — Get Up To 40%–50% OFF",
 
     "Center Point Mall",
 
