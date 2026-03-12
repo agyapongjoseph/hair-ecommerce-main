@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Star, ArrowRight } from "lucide-react";
-import heroimage from "@/assets/hero-image.jpg";
+import heroimage from "@/assets/hero-image.jpeg";
 import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
